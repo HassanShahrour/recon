@@ -1,0 +1,104 @@
+﻿@{
+    var user = User.Identity?.Name;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Reconova.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.css">
+    <link rel="stylesheet" href="~/css/navbar.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.css">
+    <link rel="stylesheet" href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css">
+    <link rel="stylesheet" href="~/plugins/datatables-buttons/css/buttons.bootstrap4.css">
+
+    <link rel="stylesheet" href="~/plugins/sweetalert2/sweetalert2.min.css">
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body id="body-pd">
+    <header class="header" id="header">
+        <div class="header_toggle"> <i class='fa fa-bars' id="header-toggle"></i> </div>
+        <span class="">@user</span>
+        <div class="header_img"> <img src="~/images/account-bg.jpg" alt=""> </div>
+    </header>
+    <div class="l-navbar" id="nav-bar">
+        <nav class="nav">
+            <div>
+                <a href="#" class="nav_logo">
+                    <i class="fas fa-crosshairs nav_logo-icon"></i>
+                    <span class="nav_logo-name">Reconova</span>
+                </a>
+                <div class="nav_list">
+
+                    <a asp-controller="Home" asp-action="Index" class="nav_link active">
+                        <i class="fa fa-chart-bar nav_icon"></i>
+                        <span class="nav_name">Dashboard</span>
+                    </a>
+
+                    <a asp-controller="Scan" asp-action="Index" class="nav_link">
+                        <i class="fa fa-bug nav_icon"></i>
+                        <span class="nav_name">Scan</span>
+                    </a>
+
+                    <a asp-controller="Category" asp-action="Index" class="nav_link">
+                        <i class="fa fa-th-large nav_icon"></i>
+                        <span class="nav_name">Categories</span>
+                    </a>
+
+                    <a asp-controller="Tool" asp-action="Index" class="nav_link">
+                        <i class="fa fa-tools nav_icon"></i>
+                        <span class="nav_name">Tools</span>
+                    </a>
+
+                    <a asp-controller="User" asp-action="Index" class="nav_link">
+                        <i class="fa fa-user nav_icon"></i>
+                        <span class="nav_name">Users</span>
+                    </a>
+
+                   
+                </div>
+            </div>
+
+            <partial name="_LoginPartial" />
+           
+        </nav>
+    </div>
+
+    <div class="container height-100">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/navbar.js" asp-append-version="true"></script>
+
+    <script src="~/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <script src="~/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="~/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+
+    <script src="~/plugins/pdfmake/pdfmake.min.js"></script>
+    <script src="~/plugins/pdfmake/vfs_fonts.js"></script>
+
+    <script src="~/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+    <script src="~/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+
+    <script src="~/plugins/sweetalert2/sweetalert2.all.js"></script>
+    <script src="~/js/datatable.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

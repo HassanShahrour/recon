@@ -1,0 +1,21 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using Reconova.Data.Models;
+@inject SignInManager<User> signInManager;
+
+
+@if (signInManager.IsSignedIn(User))
+{
+    <a asp-controller="Account" asp-action="Logout" class="nav_link">
+        <i class="fas fa-sign-out-alt nav_icon"></i>
+        <span class="nav_name">SignOut</span>
+    </a>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+    </li>
+}

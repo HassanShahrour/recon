@@ -1,0 +1,31 @@
+﻿@model Reconova.Data.Models.ScanResult
+
+@{
+    ViewData["Title"] = "Scan Result";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/scanresult.css" />
+}
+
+
+<div class="card">
+    <div class="card-header bg-blue">
+        <p><strong>Target:</strong> @Model.Target</p>
+        <p>@Model.Timestamp.ToLocalTime()</p>
+    </div>
+    <div class="card-body">
+
+        <pre>@Model.Output</pre>
+    </div>
+</div>
+
+
+<div class="btns text-center mt-2">
+    <a class="btn btn-secondary" asp-controller="Scan" asp-action="Index">Back</a>
+
+    <a class="btn btn-primary" asp-controller="Scan" asp-action="DownloadScanResult" asp-route-id="@Model.ScanId">
+        Download Result as TXT
+    </a>
+
+</div>

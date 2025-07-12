@@ -1,0 +1,11 @@
+﻿.card {
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+    padding-bottom: 0
+}

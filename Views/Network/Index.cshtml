@@ -1,0 +1,14 @@
+﻿@model List<Reconova.Data.Models.User>
+
+@{
+    ViewData["Title"] = "Network";
+}
+
+<h2 class="mb-4">Users</h2>
+
+<div class="d-flex flex-wrap gap-3">
+    @foreach (var user in Model)
+    {
+        <partial name="_UserCard" model="user" />
+    }
+</div>

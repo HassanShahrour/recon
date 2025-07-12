@@ -1,0 +1,13 @@
+﻿@model Reconova.Data.Models.User
+
+<div class="card shadow-sm rounded mb-3" style="width: 18rem;">
+   
+    <img src="@Url.Content("~/images/account-bg.jpg")" class="card-img-top" alt="Profile" style="height: 200px; object-fit: cover;">
+    <div class="card-body">
+        <h5 class="card-title">@Model.FirstName @Model.LastName</h5>
+        <p class="card-text mb-1"><strong>Email:</strong> @Model.Email</p>
+        <p class="card-text mb-1"><strong>Birth Date:</strong> @Model.BirthDate.ToString("yyyy-MM-dd")</p>
+        <p class="card-text"><strong>Username:</strong> @Model.UserName</p>
+        <a href="#" class="btn btn-primary btn-sm">View Profile</a>
+    </div>
+</div>

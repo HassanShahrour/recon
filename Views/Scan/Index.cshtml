@@ -1,0 +1,117 @@
+﻿@model Reconova.ViewModels.Scan.ScanViewModel
+
+@{
+    ViewData["Title"] = "Scan Page";
+    int counter = 1;
+}
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/tools.css"/>
+    <link rel="stylesheet" href="~/css/tables.css" />
+}
+
+<h2>Analyze Security Scan</h2>
+
+<form method="post" asp-action="Analyze">
+    <button type="submit" class="btn btn-primary">Analyze Scan</button>
+</form>
+
+<form asp-action="StartScan" method="post" class="text-center">
+    <div class="d-flex justify-content-center">
+        <input id="user_input" class="form-control" type="text" name="Target" placeholder="Enter Domain or IP" required />
+        <button class="btn btn-blue" type="submit">Start Scan</button>
+    </div>
+   
+    <section class="d-flex justify-content-center">
+
+        <div id="tools_container" style="margin-top: 1rem;">
+            <label><strong>Select Categories:</strong></label>
+
+            <div id="tools">
+                <input type="text" id="categoriesSearch" class="search form-control" placeholder="Search categories..." />
+                @foreach (var item in Model.Categories)
+                {
+                    <label>
+                       <input type="checkbox" />
+                       @item.Name
+                    </label>
+
+                }
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button class="btn btn-blue" type="button" onclick="toggleCategories(true)">Select All</button>
+                <button class="btn btn-danger" type="button" onclick="toggleCategories(false)">Deselect All</button>
+            </div>
+
+        </div>
+
+        <div id="tools_container" style="margin-top: 1rem;">
+            <label><strong>Select Tools:</strong></label>
+
+            <div id="tools">
+                <input type="text" id="toolsSearch" class="search form-control" placeholder="Search tools..." />
+                @foreach (var item in Model.Tools)
+                {
+                    <label title="@item.Description">
+                        <input type="checkbox" name="Tool" value="@item.Name"/>
+                        @item.Name
+                    </label>
+
+                }
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button class="btn btn-blue" type="button" onclick="toggleTools(true)">Select All</button>
+                <button class="btn btn-danger" type="button" onclick="toggleTools(false)">Deselect All</button>
+            </div>
+
+        </div>
+    </section>
+</form>
+
+<div class="card mt-4">
+    <div class="card-header text-center">
+        <h5>Scans History</h5>
+    </div>
+    <div class="card-body">
+        <table id="Table" class="table table-hover table-bordered table-striped text-center align-middle shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Target</th>
+                    <th>Command</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ScanResults)
+                {
+                    <tr>
+                        <td>@counter</td>
+                        <td>@item.User?.UserName</td>
+                        <td>@item.Target</td>
+                        <td>@item.Command</td>
+                        <td>@item.Timestamp.ToLocalTime()</td>
+                        <td>
+                            <a asp-controller="Scan" asp-action="ScanResult" asp-route-id="@item.ScanId">
+                                <i class="fa fa-info-circle"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    counter++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+                initializeDataTable('Table');
+        });
+    </script>
+}
