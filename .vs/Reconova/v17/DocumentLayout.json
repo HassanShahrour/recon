@@ -94,8 +94,7 @@
               "RelativeToolTip": "Core\\Utilities\\ScanUtility.cs",
               "ViewState": "AgIAAEsAAAAAAAAAAAAYwDkAAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T18:57:07.561Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-30T18:57:07.561Z"
             },
             {
               "$type": "Document",
@@ -107,8 +106,7 @@
               "RelativeToolTip": "Extensions\\InterfaceScopeServices.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T18:19:59.586Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-30T18:19:59.586Z"
             },
             {
               "$type": "Document",
@@ -120,8 +118,7 @@
               "RelativeToolTip": "Views\\Scan\\Index.cshtml",
               "ViewState": "AgIAAMMAAAAAAAAAAAAAAJ0AAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-30T18:11:49.414Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-30T18:11:49.414Z"
             },
             {
               "$type": "Document",
@@ -133,8 +130,7 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T18:08:12.393Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-30T18:08:12.393Z"
             },
             {
               "$type": "Document",
@@ -159,8 +155,7 @@
               "RelativeToolTip": "ViewModels\\Scan\\ScanReportRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T17:59:01.135Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-30T17:59:01.135Z"
             },
             {
               "$type": "Document",
@@ -172,8 +167,7 @@
               "RelativeToolTip": "Data\\Models\\ScanResult.cs",
               "ViewState": "AgIAAAgAAAAAAAAAAADwvxIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T17:36:51.691Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-30T17:36:51.691Z"
             }
           ]
         },
