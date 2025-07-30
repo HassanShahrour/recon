@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.BusinessLogic.Exceptions;
+using Reconova.Core.Utilities;
 using Reconova.Data;
 using Reconova.Data.Models;
 
@@ -10,8 +11,11 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
     public class UserRepository : BaseRepository, IUserRepository
     {
 
-        public UserRepository(ReconovaDbContext context, IMapper mapper) : base(context, mapper)
+        private readonly UserUtility _userUtility;
+
+        public UserRepository(ReconovaDbContext context, IMapper mapper, UserUtility userUtility) : base(context, mapper)
         {
+            _userUtility = userUtility;
         }
 
 
@@ -19,10 +23,12 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
         {
             try
             {
+                var loggedInUserId = await _userUtility.GetLoggedInUserId();
+
                 var users = await _context.Users
                     .Include(u => u.ScanResults)
                     .Include(u => u.AIResults)
-                    .Where(u => u.IsDeleted == 0)
+                    .Where(u => u.IsDeleted == 0 && u.Id != loggedInUserId.ToString())
                     .ToListAsync();
 
 
@@ -51,6 +57,7 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
                 var user = await _context.Users
                     .Include(u => u.ScanResults)
                     .Include(u => u.AIResults)
+                    .Include(u => u.Skills)
                     .Where(u => u.IsDeleted == 0)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
@@ -77,12 +84,14 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             try
             {
                 var existingUser = await _context.Users
+                    .Include(u => u.Skills)
                     .FirstOrDefaultAsync(u => u.Id == updatedUser.Id && u.IsDeleted == 0);
 
                 if (existingUser == null)
                 {
                     return Result<bool>.Failure("User not found.");
                 }
+
 
                 existingUser.FirstName = updatedUser.FirstName;
                 existingUser.LastName = updatedUser.LastName;
@@ -91,15 +100,81 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
                 existingUser.NormalizedUserName = updatedUser.Email?.ToUpper();
                 existingUser.PhoneNumber = updatedUser.PhoneNumber;
                 existingUser.BirthDate = updatedUser.BirthDate;
+                existingUser.Education = updatedUser.Education;
+                existingUser.Header = updatedUser.Header;
+                existingUser.Bio = updatedUser.Bio;
+                existingUser.Country = updatedUser.Country;
 
-                _context.Users.Update(existingUser);
+
+                if (updatedUser?.ProfilePhoto != null && updatedUser.ProfilePhoto.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updatedUser.ProfilePhoto.FileName);
+                    var uploadPath = Path.Combine("wwwroot", "users", "images");
+                    var filePath = Path.Combine(uploadPath, fileName);
+
+                    if (!Directory.Exists(uploadPath))
+                        Directory.CreateDirectory(uploadPath);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await updatedUser.ProfilePhoto.CopyToAsync(stream);
+                    }
+
+                    existingUser.ProfilePhotoPath = $"/users/images/{fileName}";
+                }
+
+                if (updatedUser?.CoverPhoto != null && updatedUser.CoverPhoto.Length > 0)
+                {
+                    var coverName = Guid.NewGuid().ToString() + Path.GetExtension(updatedUser.CoverPhoto.FileName);
+                    var coverPath = Path.Combine("wwwroot", "users", "images", coverName);
+
+                    using (var stream = new FileStream(coverPath, FileMode.Create))
+                    {
+                        await updatedUser.CoverPhoto.CopyToAsync(stream);
+                    }
+
+                    existingUser.CoverPhotoPath = $"/users/images/{coverName}";
+                }
+
+
+                var updatedSkillNames = updatedUser?.Skills?
+                     .Where(s => !string.IsNullOrWhiteSpace(s.Name))
+                     .Select(s => s.Name!.Trim())
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .ToList() ?? new List<string>();
+
+
+                var existingSkillNames = existingUser?.Skills?.Select(s => s.Name).ToList();
+
+
+                var skillsToRemove = existingUser?.Skills?
+                    .Where(s => !updatedSkillNames.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (skillsToRemove != null && skillsToRemove.Any())
+                {
+                    _context.Skill.RemoveRange(skillsToRemove);
+                }
+
+
+                var skillsToAddNames = updatedSkillNames
+                    .Where(name => !existingSkillNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+                    .ToList();
+
+                var skillsToAdd = skillsToAddNames.Select(name => new Skill
+                {
+                    Name = name,
+                    UserId = existingUser?.Id
+                }).ToList();
+
+                if (skillsToAdd.Any())
+                {
+                    await _context.Skill.AddRangeAsync(skillsToAdd);
+                }
+
                 await _context.SaveChangesAsync();
 
                 return Result<bool>.Success(true);
-            }
-            catch (InvalidDataException ex)
-            {
-                return Result<bool>.Failure($"Invalid data: {ex.Message}");
             }
             catch (Exception ex)
             {
@@ -107,6 +182,8 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
                 return Result<bool>.Failure("An error occurred while updating user.");
             }
         }
+
+
 
 
         public async Task<Result<bool>> DeleteUser(string id)
@@ -131,6 +208,43 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             }
         }
 
+        public async Task<string> GetLoggedInUserPhoto()
+        {
+            try
+            {
+                var userId = await _userUtility.GetLoggedInUserId();
+
+                var user = await GetUserById(userId.ToString());
+
+                return user.Value.ProfilePhotoPath ?? "~/images/account-bg.jpg";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error fetching user photo: " + ex.Message);
+                return "~/images/account-bg.jpg";
+            }
+        }
+
+
+        public async Task<Result<List<Post>>> GetUserPosts(string userId)
+        {
+            try
+            {
+                var posts = await _context.Post
+                    .Where(p => p.UserId == userId)
+                    .Include(p => p.Media)
+                    .Include(p => p.User)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToListAsync();
+
+                return Result<List<Post>>.Success(posts);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error fetching user posts: " + ex.Message);
+                return Result<List<Post>>.Failure("An error occurred while fetching user posts.");
+            }
+        }
 
     }
 }

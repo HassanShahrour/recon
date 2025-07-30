@@ -1,14 +1,58 @@
-﻿@model List<Reconova.Data.Models.User>
+﻿@model IEnumerable<Reconova.Data.Models.User>
 
 @{
-    ViewData["Title"] = "Network";
+    ViewData["Title"] = "Cybersecurity Community";
 }
 
-<h2 class="mb-4">Users</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/network.css" />
+}
 
-<div class="d-flex flex-wrap gap-3">
-    @foreach (var user in Model)
-    {
-        <partial name="_UserCard" model="user" />
-    }
+<div class="container">
+
+    <div class="posts-title">
+        <h2>Cybersecurity Community</h2>
+        <p class="posts-subtitle">Connect, learn, and share with the global cybersecurity community</p>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var user in Model)
+        {
+            @await Html.PartialAsync("_UserCard", user)
+        }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".follow-btn").on("click", function () {
+                const $button = $(this);
+                const userId = $button.data("user-id");
+                const isFollowing = $button.data("is-following") === true;
+                const url = isFollowing ? "/api/follow/unfollow" : "/api/follow/follow";
+
+                $.ajax({
+                    url: url,
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(userId),
+                    success: function (result) {
+                        if (result.success) {
+                            $button.data("is-following", !isFollowing);
+                            $button.text(isFollowing ? "Follow" : "Unfollow");
+                            $button.toggleClass("btn-danger btn-blue");
+                        } else {
+                            alert("Error: " + result.message);
+                            console.error("Server error:", result.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX error:", error);
+                        alert("Request failed: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+}

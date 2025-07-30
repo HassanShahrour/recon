@@ -19,14 +19,17 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             _userUtility = userUtility;
         }
 
-        public async Task<Result<List<ScanResult>>> GetAllScanResults()
+        public async Task<Result<List<ScanResult>>> GetAllScanResults(int id)
         {
             try
             {
+                var userId = await _userUtility.GetLoggedInUserId();
+
                 var scanResults = await _context.ScanResults
-                    .Where(sr => sr.IsDeleted == 0)
-                    //.Include(sr => sr.AIResult)
-                    //.Include(sr => sr.User)
+                    .Where(sr => sr.UserId == userId.ToString() && sr.TaskId == id && sr.IsDeleted == 0)
+                    .Include(sr => sr.AIResult)
+                    .Include(sr => sr.User)
+                    .OrderByDescending(sr => sr.Timestamp)
                     .ToListAsync();
 
                 if (scanResults == null || !scanResults.Any())
@@ -52,8 +55,8 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             try
             {
                 var scan = await _context.ScanResults
-                    //.Include(sr => sr.AIResult)
-                    //.Include(sr => sr.User)
+                    .Include(sr => sr.AIResult)
+                    .Include(sr => sr.User)
                     .FirstOrDefaultAsync(sr => sr.ScanId == id && sr.IsDeleted == 0);
 
                 if (scan == null)
@@ -74,7 +77,7 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             }
         }
 
-        public async Task<Result<bool>> AddScan(string scanId, string target, string command, string output)
+        public async Task<Result<bool>> AddScan(string scanId, int taskId, string target, string command, string output, string reply)
         {
             try
             {
@@ -84,12 +87,23 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
                 {
                     ScanId = scanId,
                     UserId = userId.ToString(),
+                    TaskId = taskId,
                     Target = target,
                     Command = command,
                     Output = output,
                 };
 
+                var analysis = new AIResult
+                {
+                    ScanId = scanId,
+                    UserId = userId.ToString(),
+                    TaskId = taskId,
+                    Output = reply,
+                };
+
                 _context.ScanResults.Add(result);
+                _context.AIResults.Add(analysis);
+
                 await _context.SaveChangesAsync();
                 return Result<bool>.Success(true);
             }

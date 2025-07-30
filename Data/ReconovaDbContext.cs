@@ -14,10 +14,41 @@ namespace Reconova.Data
         public DbSet<Tool> Tools { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Pc> Pcs { get; set; }
+        public DbSet<Skill> Skill { get; set; }
+        public DbSet<UserFollowing> UserFollowing { get; set; }
+        public DbSet<Post> Post { get; set; }
+        public DbSet<Like> Like { get; set; }
+        public DbSet<Comment> Comment { get; set; }
+        public DbSet<ChatMessage> ChatMessage { get; set; }
+        public DbSet<Tasks> Tasks { get; set; }
+        public DbSet<Notification> Notification { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+
+            // Tasks → User (many-to-1)
+            modelBuilder.Entity<Tasks>()
+                .HasOne(t => t.User)
+                .WithMany(u => u.Tasks)
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ScanResult → Task (many-to-1)
+            modelBuilder.Entity<ScanResult>()
+                .HasOne(sr => sr.Task)
+                .WithMany(t => t.ScanResults)
+                .HasForeignKey(sr => sr.TaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // AIResult → Task (many-to-1)
+            modelBuilder.Entity<AIResult>()
+                .HasOne(ar => ar.Task)
+                .WithMany(t => t.AIResults)
+                .HasForeignKey(ar => ar.TaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             // User → ScanResults (1-to-many)
             modelBuilder.Entity<ScanResult>()
@@ -47,6 +78,45 @@ namespace Reconova.Data
                 .WithMany()
                 .HasForeignKey(t => t.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // UserFollowing configuration
+            modelBuilder.Entity<UserFollowing>()
+                .HasOne(uf => uf.Follower)
+                .WithMany(u => u.Following)
+                .HasForeignKey(uf => uf.FollowerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserFollowing>()
+                .HasOne(uf => uf.Followee)
+                .WithMany(u => u.Followers)
+                .HasForeignKey(uf => uf.FolloweeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // Message configuration
+            modelBuilder.Entity<ChatMessage>()
+               .HasOne(m => m.Sender)
+               .WithMany(u => u.SentMessages)
+               .HasForeignKey(m => m.SenderId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Recipient)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(m => m.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<Skill>()
+             .HasOne(s => s.User)
+             .WithMany(u => u.Skills)
+             .HasForeignKey(s => s.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Media)
+                .WithOne(m => m.Post)
+                .HasForeignKey(m => m.PostId);
         }
 
 

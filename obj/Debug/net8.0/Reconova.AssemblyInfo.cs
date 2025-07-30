@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Reconova")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69e61ec7277b9f60d37ccef874fa191e05b0ffba")]
 [assembly: System.Reflection.AssemblyProductAttribute("Reconova")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Reconova")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

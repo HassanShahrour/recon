@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Reconova.Data.Models
 {
@@ -19,16 +20,48 @@ namespace Reconova.Data.Models
 
         public sbyte IsDeleted { get; set; } = 0;
 
-        //public string? Role { get; set; }
+        public string? Role { get; set; }
 
-        //[NotMapped]
-        //[Display(Name = "Choose a profile picture")]
-        //public IFormFile? ProfilePhtoto { get; set; }
+        [MaxLength(500)]
+        public string? Bio { get; set; }
 
-        //public string? ProfilePhotoPath { get; set; } = "~/images/account-bg.jpg";
+        public string? Header { get; set; }
+
+        public string? Education { get; set; }
+
+
+        [NotMapped]
+        [Display(Name = "Choose a Profile Photo")]
+        public IFormFile? ProfilePhoto { get; set; }
+
+        public string? ProfilePhotoPath { get; set; } = "~/images/account-bg.jpg";
+
+
+        [NotMapped]
+        [Display(Name = "Choose a Cover Photo")]
+        public IFormFile? CoverPhoto { get; set; }
+
+        public string? CoverPhotoPath { get; set; } = "~/images/account-bg.jpg";
+
+
+        public string? Country { get; set; }
+
+        public DateTime? LastSeen { get; set; }
+
+        public bool IsOnline { get; set; } = false;
 
         public ICollection<ScanResult>? ScanResults { get; set; }
         public ICollection<AIResult>? AIResults { get; set; }
 
+        public ICollection<UserFollowing>? Following { get; set; }
+        public ICollection<UserFollowing>? Followers { get; set; }
+
+        public ICollection<ChatMessage>? SentMessages { get; set; }
+        public ICollection<ChatMessage>? ReceivedMessages { get; set; }
+
+        public ICollection<Skill>? Skills { get; set; }
+        public ICollection<Post>? Posts { get; set; }
+
+        public ICollection<Tasks>? Tasks { get; set; }
     }
 }

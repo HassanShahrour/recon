@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Data.Models;
+using Reconova.ViewModels.Users;
 
 namespace Reconova.Controllers
 {
@@ -25,6 +26,27 @@ namespace Reconova.Controllers
             {
                 Console.WriteLine("Error fetching users: " + ex.Message);
                 return View(new List<User>());
+            }
+        }
+
+        public async Task<IActionResult> ViewUser(string id)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserById(id);
+                var posts = await _userRepository.GetUserPosts(user.Value.Id);
+                var model = new ProfileViewModel
+                {
+                    User = user.Value ?? new User(),
+                    Posts = posts.Value ?? new List<Post>(),
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error fetching user: " + ex.Message);
+                return View(new ProfileViewModel());
             }
         }
 

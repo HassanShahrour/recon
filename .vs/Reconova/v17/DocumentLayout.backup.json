@@ -3,8 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\USER\\Desktop\\Reconova\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\core\\utilities\\aiutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:core\\utilities\\aiutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\controllers\\api\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:controllers\\api\\reportcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\viewmodels\\scan\\scanreportrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:viewmodels\\scan\\scanreportrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\core\\utilities\\scanutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:core\\utilities\\scanutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\extensions\\interfacescopeservices.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -15,28 +23,12 @@
       "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:views\\scan\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\controllers\\chatcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:controllers\\chatcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\controllers\\scancontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:controllers\\scancontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\extensions\\applicationservices.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:extensions\\applicationservices.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\views\\scan\\result.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:views\\scan\\result.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\views\\scan\\scanresult.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:views\\scan\\scanresult.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\core\\utilities\\scanutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:core\\utilities\\scanutility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|c:\\users\\user\\desktop\\reconova\\data\\models\\scanresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5913C616-128D-4585-920D-1BD47BC6087D}|Reconova.csproj|solutionrelative:data\\models\\scanresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -46,125 +38,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 15,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ChatController.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Controllers\\ChatController.cs",
-              "RelativeDocumentMoniker": "Controllers\\ChatController.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Controllers\\ChatController.cs",
-              "RelativeToolTip": "Controllers\\ChatController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T19:24:50.891Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\Index.cshtml",
-              "RelativeDocumentMoniker": "Views\\Scan\\Index.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\Index.cshtml",
-              "RelativeToolTip": "Views\\Scan\\Index.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-08T19:24:04.46Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Result.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\Result.cshtml",
-              "RelativeDocumentMoniker": "Views\\Scan\\Result.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\Result.cshtml",
-              "RelativeToolTip": "Views\\Scan\\Result.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-08T19:23:35.419Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "ApplicationServices.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Extensions\\ApplicationServices.cs",
-              "RelativeDocumentMoniker": "Extensions\\ApplicationServices.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Extensions\\ApplicationServices.cs",
-              "RelativeToolTip": "Extensions\\ApplicationServices.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T19:01:09.585Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "InterfaceScopeServices.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Extensions\\InterfaceScopeServices.cs",
-              "RelativeDocumentMoniker": "Extensions\\InterfaceScopeServices.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Extensions\\InterfaceScopeServices.cs",
-              "RelativeToolTip": "Extensions\\InterfaceScopeServices.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAA3AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T19:01:07.466Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AIUtility.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Core\\Utilities\\AIUtility.cs",
-              "RelativeDocumentMoniker": "Core\\Utilities\\AIUtility.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Core\\Utilities\\AIUtility.cs*",
-              "RelativeToolTip": "Core\\Utilities\\AIUtility.cs*",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAIwBwAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T19:00:13.276Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "ScanResult.cshtml",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\ScanResult.cshtml",
-              "RelativeDocumentMoniker": "Views\\Scan\\ScanResult.cshtml",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\ScanResult.cshtml",
-              "RelativeToolTip": "Views\\Scan\\ScanResult.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-08T18:44:32.905Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ScanUtility.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Core\\Utilities\\ScanUtility.cs",
-              "RelativeDocumentMoniker": "Core\\Utilities\\ScanUtility.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Core\\Utilities\\ScanUtility.cs",
-              "RelativeToolTip": "Core\\Utilities\\ScanUtility.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAABgAAABPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T18:14:29.619Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ScanController.cs",
-              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Controllers\\ScanController.cs",
-              "RelativeDocumentMoniker": "Controllers\\ScanController.cs",
-              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Controllers\\ScanController.cs",
-              "RelativeToolTip": "Controllers\\ScanController.cs",
-              "ViewState": "AgIAAG0AAAAAAAAAAAAcwHcAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-08T18:35:36.754Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
@@ -208,6 +83,97 @@
             {
               "$type": "Bookmark",
               "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ScanUtility.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Core\\Utilities\\ScanUtility.cs",
+              "RelativeDocumentMoniker": "Core\\Utilities\\ScanUtility.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Core\\Utilities\\ScanUtility.cs",
+              "RelativeToolTip": "Core\\Utilities\\ScanUtility.cs",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAYwDkAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-30T18:57:07.561Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "InterfaceScopeServices.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Extensions\\InterfaceScopeServices.cs",
+              "RelativeDocumentMoniker": "Extensions\\InterfaceScopeServices.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Extensions\\InterfaceScopeServices.cs",
+              "RelativeToolTip": "Extensions\\InterfaceScopeServices.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-30T18:19:59.586Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Scan\\Index.cshtml",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Views\\Scan\\Index.cshtml",
+              "RelativeToolTip": "Views\\Scan\\Index.cshtml",
+              "ViewState": "AgIAAMMAAAAAAAAAAAAAAJ0AAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-07-30T18:11:49.414Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-30T18:08:12.393Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ReportController.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Controllers\\Api\\ReportController.cs",
+              "RelativeDocumentMoniker": "Controllers\\Api\\ReportController.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Controllers\\Api\\ReportController.cs",
+              "RelativeToolTip": "Controllers\\Api\\ReportController.cs",
+              "ViewState": "AgIAALEAAAAAAAAAAAAcwMAAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-30T18:03:16.65Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ScanReportRequest.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\ViewModels\\Scan\\ScanReportRequest.cs",
+              "RelativeDocumentMoniker": "ViewModels\\Scan\\ScanReportRequest.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\ViewModels\\Scan\\ScanReportRequest.cs",
+              "RelativeToolTip": "ViewModels\\Scan\\ScanReportRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-30T17:59:01.135Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ScanResult.cs",
+              "DocumentMoniker": "C:\\Users\\USER\\Desktop\\Reconova\\Data\\Models\\ScanResult.cs",
+              "RelativeDocumentMoniker": "Data\\Models\\ScanResult.cs",
+              "ToolTip": "C:\\Users\\USER\\Desktop\\Reconova\\Data\\Models\\ScanResult.cs",
+              "RelativeToolTip": "Data\\Models\\ScanResult.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAADwvxIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-30T17:36:51.691Z",
+              "EditorCaption": ""
             }
           ]
         },

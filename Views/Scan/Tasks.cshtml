@@ -1,0 +1,178 @@
+﻿@model List<Reconova.Data.Models.Tasks>
+@{
+    ViewData["Title"] = "Tasks";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/tasks.css" />
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>My Tasks</h3>
+        <button class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="fas fa-plus me-2"></i>Add Task
+        </button>
+    </div>
+
+    <div class="row">
+        @foreach (var task in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow position-relative h-100">
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" style="transform: translate(50%, -50%); z-index: 10;"
+                            onclick="deleteTask(@task.Id)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-4">
+                            <h5 class="card-title">@task.Target</h5>
+                            <p class="card-text text-muted">
+                                @(task.Description ?? "No description")
+                            </p>
+                        </div>
+                        <div class="down mt-auto">
+                            <p class="mt-1 mb-1 text-muted">Progress: <strong>@task.Percentage%</strong></p>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" style="width: @task.Percentage%" aria-valuenow="@task.Percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Scan" asp-action="Index" asp-route-id="@task.Id" class="btn btn-outline-primary flex-grow-1">
+                                    <i class="fas fa-eye me-2"></i> Explore
+                                </a>
+                                <button class="btn btn-blue" onclick="openEditModal(@task.Id, '@task.Target', '@(task.Description ?? "")', @task.Percentage)">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer small text-end bg-blue">
+                        Modified: @(task.LastModified?.ToLocalTime().ToString("dd-MMMM-yyyy HH:mm:ss") ?? "N/A")
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal for Adding New Task -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-action="CreateTask" method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Target</label>
+                    <input name="Target" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="Description" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-blue">Create</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Modal for Editing Task -->
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="editTaskForm" method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="Id" id="editTaskId" />
+
+                <div class="mb-3">
+                    <label class="form-label">Target</label>
+                    <input type="text" class="form-control" name="Target" id="editTaskTarget" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="Description" id="editTaskDescription" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Progress: <span id="editPercentageLabel">0%</span></label>
+                    <input type="range" class="form-range" min="0" max="100" id="editTaskPercentage" name="Percentage" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-blue">Save Changes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        function openEditModal(id, target, description, percentage) {
+            $('#editTaskId').val(id);
+            $('#editTaskTarget').val(target);
+            $('#editTaskDescription').val(description);
+            $('#editTaskPercentage').val(percentage);
+            $('#editPercentageLabel').text(percentage + '%');
+            $('#editTaskModal').modal('show');
+        }
+
+        $('#editTaskPercentage').on('input', function () {
+            $('#editPercentageLabel').text($(this).val() + '%');
+        });
+
+        $('#editTaskForm').on('submit', function (e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+
+            $.post('/Scan/EditTask', formData)
+                .done(function () {
+                    $('#editTaskModal').modal('hide');
+                    location.reload();
+                })
+                .fail(function () {
+                    alert("An error occurred while updating the task.");
+                });
+        });
+
+        function deleteTask(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This task will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Scan/DeleteTask/' + id,
+                        type: 'POST',
+                        success: function () {
+                            location.reload();
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'An error occurred while deleting the task.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+    </script>
+}

@@ -1,5 +1,12 @@
-﻿@{
+﻿@using Reconova.BusinessLogic.DatabaseHelper.Interfaces
+@inject IUserRepository userRepository
+@inject INotificationRepository notificationRepository
+
+@{
     var user = User.Identity?.Name;
+    var profilePhoto = await userRepository.GetLoggedInUserPhoto();
+    var notifications = await notificationRepository.GetAllNotifications();
+    var count = (notifications?.Value ?? new List<Notification>()).Count(n => n.IsRead == 0);
 }
 
 <!DOCTYPE html>
@@ -8,6 +15,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+    <link rel="icon" type="image" href="~/icon_bg_blue.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Reconova.styles.css" asp-append-version="true" />
@@ -26,13 +34,25 @@
     <header class="header" id="header">
         <div class="header_toggle"> <i class='fa fa-bars' id="header-toggle"></i> </div>
         <span class="">@user</span>
-        <div class="header_img"> <img src="~/images/account-bg.jpg" alt=""> </div>
+
+        <div class="d-flex gap-4">
+            <a asp-controller="Notification" asp-action="Index" class="notification-icon">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notification-count">@count</span>
+            </a>
+
+            <div class="header_img">
+                <img src="@Url.Content(profilePhoto)" alt="Profile Photo">
+            </div>
+        </div>
+       
+
     </header>
     <div class="l-navbar" id="nav-bar">
         <nav class="nav">
             <div>
                 <a href="#" class="nav_logo">
-                    <i class="fas fa-crosshairs nav_logo-icon"></i>
+                    <img src="~/icon_transperant.png" class="nav_logo-icon" />
                     <span class="nav_logo-name">Reconova</span>
                 </a>
                 <div class="nav_list">
@@ -42,7 +62,7 @@
                         <span class="nav_name">Dashboard</span>
                     </a>
 
-                    <a asp-controller="Scan" asp-action="Index" class="nav_link">
+                    <a asp-controller="Scan" asp-action="Tasks" class="nav_link">
                         <i class="fa fa-bug nav_icon"></i>
                         <span class="nav_name">Scan</span>
                     </a>
@@ -58,11 +78,30 @@
                     </a>
 
                     <a asp-controller="User" asp-action="Index" class="nav_link">
-                        <i class="fa fa-user nav_icon"></i>
+                        <i class="fa fa-users nav_icon"></i>
                         <span class="nav_name">Users</span>
                     </a>
 
-                   
+                    <a asp-controller="Network" asp-action="Index" class="nav_link">
+                        <i class="fas fa-globe nav_icon"></i>
+                        <span class="nav_name">Connections</span>
+                    </a>
+
+                    <a asp-controller="Post" asp-action="Index" class="nav_link">
+                        <i class="fas fa-solid fa-clipboard-list nav_icon"></i>
+                        <span class="nav_name">Posts</span>
+                    </a>
+
+                    <a asp-controller="Chat" asp-action="Index" class="nav_link">
+                        <i class="fas fa-comment nav_icon"></i>
+                        <span class="nav_name">Chatting</span>
+                    </a>
+
+                    <a asp-controller="Account" asp-action="Profile" class="nav_link">
+                        <i class="fas fa-user nav_icon"></i>
+                        <span class="nav_name">My Profile</span>
+                    </a>
+
                 </div>
             </div>
 
@@ -98,6 +137,59 @@
 
     <script src="~/plugins/sweetalert2/sweetalert2.all.js"></script>
     <script src="~/js/datatable.js"></script>
+
+    <script src="~/js/SignalR.js"></script>
+
+    <script>
+        let unreadCount = @count;
+
+        window.chatConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .withAutomaticReconnect()
+            .build();
+
+        async function startChatConnection() {
+            try {
+                await window.chatConnection.start();
+                console.log("Global ChatHub connection started.");
+            } catch (err) {
+                console.error("Error starting ChatHub connection:", err);
+                setTimeout(startChatConnection, 2000);
+            }
+        }
+
+        window.chatConnection.onclose(async () => {
+            await startChatConnection();
+        });
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await startChatConnection();
+        });
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .build();
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        connection.on("ReceiveNotification", function (notification) {
+            unreadCount++;
+
+            const badge = document.getElementById("notification-count");
+            if (badge) {
+                badge.textContent = unreadCount;
+            }
+            showToast(notification.message);
+        });
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

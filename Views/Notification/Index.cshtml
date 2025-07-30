@@ -1,0 +1,57 @@
+﻿@model List<Reconova.Data.Models.Notification>
+
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/notification.css" asp-append-version="true" />
+}
+
+<h2 class="mb-2 text-center">Notifications</h2>
+
+<div class="toggle-buttons">
+    <button class="active" onclick="showSection('all')">All</button>
+    <button onclick="showSection('unread')">Unread</button>
+    <button onclick="showSection('read')">Read</button>
+</div>
+
+<div id="section-all" class="notification-section active">
+    @await Html.PartialAsync("_NotificationList", Model)
+</div>
+
+<div id="section-unread" class="notification-section">
+    @await Html.PartialAsync("_NotificationList", Model.Where(n => n.IsRead == 0).ToList())
+</div>
+
+<div id="section-read" class="notification-section">
+    @await Html.PartialAsync("_NotificationList", Model.Where(n => n.IsRead == 1).ToList())
+</div>
+
+@section Scripts {
+    <script>
+        function showSection(section) {
+            $('.toggle-buttons button').removeClass('active');
+            $('.toggle-buttons button').filter(function () {
+                return $(this).text().toLowerCase() === section;
+            }).addClass('active');
+
+            $('.notification-section').removeClass('active');
+            $(`#section-${section}`).addClass('active');
+        }
+
+        function markAsRead(id, iconElement) {
+            $.ajax({
+                url: `/api/notification/${id}`,
+                type: 'PUT',
+                success: function () {
+                    $(iconElement).fadeOut();
+                    $(`#notification-${id}`).removeClass('unread');
+                },
+                error: function () {
+                    alert("Failed to mark notification as read.");
+                }
+            });
+        }
+    </script>
+}

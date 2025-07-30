@@ -1,0 +1,30 @@
+﻿@model Reconova.ViewModels.Users.ProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" />
+    <link rel="stylesheet" href="~/css/post.css" />
+}
+
+<div class="container">
+    @await Html.PartialAsync("_UserProfileCard", Model.User)
+
+
+    <div class="d-flex gap-2 mt-3">
+        <a class="btn btn-blue" asp-action="Edit">Edit</a>
+        <a class="btn btn-secondary" asp-controller="Post" asp-action="Create">Create a Post</a>
+    </div>
+
+    <div class="posts-container">
+        <div class="posts-grid">
+            @foreach (var post in Model.Posts)
+            {
+                @await Html.PartialAsync("_PostCard", post)
+            }
+        </div>
+    </div>
+</div>
+

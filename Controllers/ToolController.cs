@@ -19,113 +19,69 @@ namespace Reconova.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var tools = await _toolsRepository.GetAllTools();
-
-            var categories = await _categoryRepository.GetAllCategories();
-
-            var model = new ToolViewModel
-            {
-                Tools = tools.Value ?? new List<Tool>(),
-                Categories = categories.Value ?? new List<Category>(),
-            };
-
-            return View(model ?? new ToolViewModel());
-        }
-
-        public IActionResult Add()
-        {
-            return View();
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(Tool tool)
-        {
-            if (!ModelState.IsValid)
-            {
-                return RedirectToAction(nameof(Add));
-            }
-
             try
             {
-                var result = await _toolsRepository.AddTool(tool);
-                if (result.IsSuccess)
-                    TempData["Success"] = "Tool added successfully.";
-                else
-                    TempData["Error"] = "Error while adding tool";
+                var tools = await _toolsRepository.GetAllTools();
 
-                return RedirectToAction(nameof(Index));
+                var categories = await _categoryRepository.GetAllCategories();
+
+                var model = new ToolViewModel
+                {
+                    Tools = tools.Value ?? new List<Tool>(),
+                    Categories = categories.Value ?? new List<Category>(),
+                };
+
+                return View(model ?? new ToolViewModel());
             }
             catch (Exception ex)
             {
                 TempData["Error"] = $"Unexpected error: {ex.Message}";
-                return RedirectToAction(nameof(Add));
-            }
-        }
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var tool = await _toolsRepository.GetToolById(id);
-            if (!tool.IsSuccess || tool.Value == null)
-            {
-                TempData["Error"] = "Tool not found.";
                 return RedirectToAction(nameof(Index));
             }
-
-            var categories = await _categoryRepository.GetAllCategories();
-
-            var model = new ToolViewModel
-            {
-                Categories = categories.Value,
-            };
-
-            return View(model ?? new ToolViewModel());
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Tool tool)
+        [Route("api/tool")]
+        public async Task<IActionResult> CreateToolApi([FromBody] Tool tool)
         {
             if (!ModelState.IsValid)
-            {
-                return RedirectToAction(nameof(Edit));
-            }
+                return BadRequest(ModelState);
 
-            try
-            {
-                var result = await _toolsRepository.UpdateTool(tool);
-                if (result.IsSuccess)
-                    TempData["Success"] = "Tool updated successfully.";
-                else
-                    TempData["Error"] = "Error while updating tool";
+            var result = await _toolsRepository.AddTool(tool);
+            if (result.IsSuccess)
+                return Ok(tool);
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Unexpected error: {ex.Message}";
-                return RedirectToAction(nameof(Edit));
-            }
+            return StatusCode(500, "Failed to add tool");
         }
 
-        public async Task<IActionResult> Delete(int id)
+        [HttpPut]
+        [Route("api/tool/{id}")]
+        public async Task<IActionResult> EditToolApi(int id, [FromBody] Tool updatedTool)
         {
-            try
-            {
-                var result = await _toolsRepository.DeleteTool(id);
-                if (result.IsSuccess)
-                    TempData["Success"] = "Tool deleted successfully.";
-                else
-                    TempData["Error"] = "Error while deleting tool";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Unexpected error: {ex.Message}";
-            }
+            var existing = await _toolsRepository.GetToolById(id);
+            if (!existing.IsSuccess || existing.Value == null)
+                return NotFound("Tool not found");
 
-            return RedirectToAction(nameof(Index));
+            updatedTool.Id = id;
+
+            var result = await _toolsRepository.UpdateTool(updatedTool);
+            if (result.IsSuccess)
+                return Ok(updatedTool);
+
+            return StatusCode(500, "Failed to update tool");
         }
+
+        [HttpDelete]
+        [Route("api/tool/{id}")]
+        public async Task<IActionResult> DeleteToolApi(int id)
+        {
+            var result = await _toolsRepository.DeleteTool(id);
+            if (result.IsSuccess)
+                return NoContent();
+
+            return StatusCode(500, "Failed to delete tool");
+        }
+
 
     }
 }

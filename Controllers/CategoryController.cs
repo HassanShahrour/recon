@@ -17,95 +17,76 @@ namespace Reconova.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var categories = await _categoryRepository.GetAllCategories();
-            return View(categories.Value ?? new List<Category>());
-        }
-
-
-        public IActionResult Add()
-        {
-            return View();
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(Category category)
-        {
-            if (!ModelState.IsValid)
-                return View(category);
-
             try
             {
-                var result = await _categoryRepository.AddCategory(category);
-                if (result.IsSuccess)
-                    TempData["Success"] = "Category added successfully.";
-                else
-                    TempData["Error"] = "Error while adding category";
-
-                return RedirectToAction(nameof(Index));
+                var categories = await _categoryRepository.GetAllCategories();
+                return View(categories.Value ?? new List<Category>());
             }
             catch (Exception ex)
             {
                 TempData["Error"] = $"Unexpected error: {ex.Message}";
-                return View(category);
+                return View(new List<Category>());
             }
         }
 
 
-        public async Task<IActionResult> Edit(int id)
+        [HttpGet("api/category/{id}")]
+        public async Task<IActionResult> GetCategory(int id)
         {
             var result = await _categoryRepository.GetCategoryById(id);
             if (!result.IsSuccess || result.Value == null)
-            {
-                TempData["Error"] = "Category not found.";
-                return RedirectToAction(nameof(Index));
-            }
+                return NotFound(new { message = "Category not found" });
 
-            return View(result.Value);
+            return Ok(result.Value);
         }
 
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Category category)
+        [HttpPost("api/category")]
+        public async Task<IActionResult> AddCategory([FromBody] Category category)
         {
-            if (!ModelState.IsValid)
-                return View(category);
+            if (category == null || string.IsNullOrWhiteSpace(category.Name))
+                return BadRequest(new { message = "Invalid category data" });
 
-            try
-            {
-                var result = await _categoryRepository.UpdateCategory(category);
-                if (result.IsSuccess)
-                    TempData["Success"] = "Category updated successfully.";
-                else
-                    TempData["Error"] = "Error while updating category";
+            var result = await _categoryRepository.AddCategory(category);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = "Error while adding category" });
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Unexpected error: {ex.Message}";
-                return View(category);
-            }
+            return Ok(new { message = "Category added successfully" });
         }
 
-        public async Task<IActionResult> Delete(int id)
+
+        [HttpPut("api/category/{id}")]
+        public async Task<IActionResult> EditCategory(int id, [FromBody] Category category)
         {
-            try
-            {
-                var result = await _categoryRepository.DeleteCategory(id);
-                if (result.IsSuccess)
-                    TempData["Success"] = "Category deleted successfully.";
-                else
-                    TempData["Error"] = "Error while deleting category";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Unexpected error: {ex.Message}";
-            }
+            if (category == null || id != category.Id || string.IsNullOrWhiteSpace(category.Name))
+                return BadRequest(new { message = "Invalid category data" });
 
-            return RedirectToAction(nameof(Index));
+            var existing = await _categoryRepository.GetCategoryById(id);
+            if (!existing.IsSuccess || existing.Value == null)
+                return NotFound(new { message = "Category not found" });
+
+            var result = await _categoryRepository.UpdateCategory(category);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = "Error while updating category" });
+
+            return Ok(new { message = "Category updated successfully" });
         }
+
+
+        [HttpDelete("api/category/{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var existing = await _categoryRepository.GetCategoryById(id);
+            if (!existing.IsSuccess || existing.Value == null)
+                return NotFound(new { message = "Category not found" });
+
+            var result = await _categoryRepository.DeleteCategory(id);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = "Error while deleting category" });
+
+            return Ok(new { message = "Category deleted successfully" });
+        }
+
+
     }
 }

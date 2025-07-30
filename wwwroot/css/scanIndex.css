@@ -1,0 +1,27 @@
+﻿#topNavButtons {
+    /*    position: fixed;*/
+    /*    top: 10px;*/
+    /*    left: 50%;*/
+    /*    transform: translateX(-50%);*/
+    z-index: 9999;
+    border-radius: .25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.5rem 1.2rem 0.1rem 1.2rem;
+    font-family: 'Segoe UI', sans-serif;
+    width: fit-content;
+    background-color: rgba(0, 0, 0, .03);
+}
+
+#btnTools, #btnHistory, .btn-back {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.selected-btn {
+    color: #007bff;
+    border-bottom: 3px solid #007bff;
+    transition: color 0.1s ease-out, border-bottom 0.1s ease-out;
+}
+

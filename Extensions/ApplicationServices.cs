@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Reconova.Data;
 using Reconova.Data.Models;
+using Reconova.Settings;
 
 namespace Reconova.Extensions
 {
@@ -55,6 +57,14 @@ namespace Reconova.Extensions
                 });
 
             services.AddHttpContextAccessor();
+            services.AddSignalR();
+
+            services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 524288000;
+            });
+
+            services.Configure<OpenRouterSettings>(configuration.GetSection("OpenRouter"));
 
             return services;
         }

@@ -12,6 +12,8 @@ namespace Reconova.Data.Models
         [Required]
         public string? UserId { get; set; }
 
+        public int TaskId { get; set; }
+
         [Required]
         public string? Target { get; set; }
 
@@ -23,6 +25,9 @@ namespace Reconova.Data.Models
         public sbyte IsDeleted { get; set; } = 0;
 
         public User? User { get; set; }
+
         public AIResult? AIResult { get; set; }
+
+        public Tasks? Task { get; set; }
     }
 }

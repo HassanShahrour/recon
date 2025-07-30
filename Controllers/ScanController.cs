@@ -10,100 +10,202 @@ namespace Reconova.Controllers
     [Authorize]
     public class ScanController : Controller
     {
-
         private readonly IScanRepository _scanRepository;
         private readonly ScanUtility _scanUtility;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IToolsRepository _toolsRepository;
-        private readonly AIUtility _openAI;
+        private readonly ITaskRepository _taskRepository;
 
-        public ScanController(IScanRepository scanRepository, ScanUtility scanUtility, ICategoryRepository categoryRepository, IToolsRepository toolsRepository, AIUtility openAI)
+        public ScanController(
+            IScanRepository scanRepository,
+            ScanUtility scanUtility,
+            ICategoryRepository categoryRepository,
+            IToolsRepository toolsRepository,
+            ITaskRepository taskRepository)
         {
             _scanRepository = scanRepository;
             _scanUtility = scanUtility;
             _categoryRepository = categoryRepository;
             _toolsRepository = toolsRepository;
-            _openAI = openAI;
+            _taskRepository = taskRepository;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            var scans = await _scanRepository.GetAllScanResults();
-            var categories = await _categoryRepository.GetAllCategories();
-            var tools = await _toolsRepository.GetAllTools();
-
-            var model = new ScanViewModel
-            {
-                ScanResults = scans.Value ?? new List<ScanResult>(),
-                Categories = categories.Value ?? new List<Category>(),
-                Tools = tools.Value ?? new List<Tool>(),
-            };
-
-            return View(model ?? new ScanViewModel());
-        }
-
-        public async Task<IActionResult> ScanResult(string id)
+        public async Task<IActionResult> Tasks()
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    TempData["ErrorMessage"] = "Invalid scan Id.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                var scanOutput = await _scanRepository.GetScanResultById(id);
-
-                if (scanOutput == null)
-                {
-                    TempData["ErrorMessage"] = "Scan not found.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                return View(scanOutput.Value ?? new ScanResult());
+                var tasks = await _taskRepository.GetAllTasks();
+                return View(tasks.Value ?? new List<Tasks>());
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"An error occurred while fetching scan: {ex.Message}";
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = $"Unexpected error loading tasks: {ex.Message}";
+                return View(new List<Tasks>());
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> StartScan(string target, string tool)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateTask(Tasks task)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Tasks));
+            }
+
             try
             {
-                var scanId = await _scanUtility.StartReconScanAsync(target, tool);
+                var result = await _taskRepository.AddTask(task);
+                if (result.IsSuccess)
+                    TempData["Success"] = "Task added successfully.";
+                else
+                    TempData["Error"] = "Error while adding task";
 
-                return RedirectToAction("ScanResult", new { id = scanId });
+                return RedirectToAction(nameof(Tasks));
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"An error occurred while scanning: {ex.Message}";
-                return RedirectToAction(nameof(Index));
+                TempData["Error"] = $"Unexpected error: {ex.Message}";
+                return RedirectToAction(nameof(Tasks));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditTask([FromForm] Tasks task)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { message = "Invalid task data." });
+            }
+
+            try
+            {
+                var result = await _taskRepository.UpdateTask(task);
+                if (result.IsSuccess)
+                    return Ok(new { message = "Task updated successfully." });
+                else
+                    return BadRequest(new { message = "Error while updating task." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Unexpected error: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("Scan/DeleteTask/{id}")]
+        public async Task<IActionResult> DeleteTask(int id)
+        {
+            try
+            {
+                var result = await _taskRepository.DeleteTask(id);
+                if (result.IsSuccess)
+                    return Ok(new { message = "Task deleted successfully." });
+                else
+                    return BadRequest(new { message = "Error while deleting task." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Unexpected error: {ex.Message}" });
+            }
+        }
+
+
+        public async Task<IActionResult> Index(int id)
+        {
+            try
+            {
+                var scansResult = await _scanRepository.GetAllScanResults(id);
+                var categoriesResult = await _categoryRepository.GetAllCategories();
+                var toolsResult = await _toolsRepository.GetAllTools();
+                var task = await _taskRepository.GetTaskById(id);
+
+                var target = task.Value.Target ?? "";
+
+                var model = new ScanViewModel
+                {
+                    TaskId = id,
+                    Target = target,
+                    ScanResults = scansResult.Value ?? new List<ScanResult>(),
+                    Categories = categoriesResult.Value ?? new List<Category>(),
+                    Tools = toolsResult.Value ?? new List<Tool>()
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Unexpected error loading scan data: {ex.Message}";
+                return RedirectToAction(nameof(Tasks));
+            }
+        }
+
+        public async Task<IActionResult> ScanResult(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Invalid scan Id.";
+                return RedirectToAction(nameof(Tasks));
+            }
+
+            try
+            {
+                var scanResult = await _scanRepository.GetScanResultById(id);
+
+                if (scanResult == null || scanResult.Value == null)
+                {
+                    TempData["ErrorMessage"] = "Scan not found.";
+                    return RedirectToAction(nameof(Tasks));
+                }
+
+                return View(scanResult.Value);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error fetching scan result: {ex.Message}";
+                return RedirectToAction(nameof(Tasks));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> StartScan(string target, string tool, int taskId)
+        {
+            if (string.IsNullOrWhiteSpace(target) || string.IsNullOrWhiteSpace(tool) || taskId <= 0)
+            {
+                TempData["ErrorMessage"] = "Target, tool, and valid task ID must be provided.";
+                return RedirectToAction(nameof(Index), new { id = taskId });
+            }
+
+            try
+            {
+                var scanId = await _scanUtility.StartReconScanAsync(target, tool, taskId);
+                return RedirectToAction(nameof(ScanResult), new { id = scanId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error starting scan: {ex.Message}";
+                return RedirectToAction(nameof(Index), new { id = taskId });
             }
         }
 
         public async Task<IActionResult> DownloadScanResult(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Invalid scan ID.";
+                return RedirectToAction(nameof(Tasks));
+            }
+
             try
             {
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    TempData["ErrorMessage"] = "Invalid scan ID.";
-                    return RedirectToAction(nameof(Index));
-                }
+                var scanResult = await _scanRepository.GetScanResultById(id);
 
-                var scanOutput = await _scanRepository.GetScanResultById(id);
-
-                if (scanOutput == null || scanOutput.Value == null)
+                if (scanResult == null || scanResult.Value == null)
                 {
                     TempData["ErrorMessage"] = "Scan result not found.";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Tasks));
                 }
 
-                var content = scanOutput.Value.Output ?? "No scan result available.";
+                var content = scanResult.Value.Output ?? "No scan result available.";
                 var fileName = $"Scan_{id}.txt";
                 var contentType = "text/plain";
                 var fileBytes = System.Text.Encoding.UTF8.GetBytes(content);
@@ -112,32 +214,10 @@ namespace Reconova.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Error downloading file: {ex.Message}";
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = $"Error downloading scan result: {ex.Message}";
+                return RedirectToAction(nameof(Tasks));
             }
         }
-
-        public IActionResult Result()
-        {
-            return View();
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> Analyze()
-        {
-            //string filePath = @"C:\path\to\your-scan-output.txt";
-            //if (!System.IO.File.Exists(filePath))
-            //    return View("Error", "Scan file not found.");
-
-            //string scanContent = await System.IO.File.ReadAllTextAsync(filePath);
-            string analysis = await _openAI.AnalyzeScan("Starting Nmap 7.95 ( https://nmap.org ) at 2025-05-09 08:58 EEST\r\nNmap scan report for dns.google (8.8.8.8)\r\nHost is up (0.0050s latency).\r\nNot shown: 999 filtered tcp ports (no-response)\r\nPORT    STATE SERVICE\r\n443/tcp open  https\r\n\r\nNmap done: 1 IP address (1 host up) scanned in 4.59 seconds\r\n ");
-
-            ViewBag.Analysis = analysis;
-            return View("Result");
-        }
-
-
 
     }
 }

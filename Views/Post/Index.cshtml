@@ -1,0 +1,116 @@
+﻿@model List<Reconova.Data.Models.Post>
+@using System.Globalization
+@{
+    ViewData["Title"] = "Posts";
+}
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/post.css"/>
+}
+
+<div class="posts-container">
+    
+    <div class="posts-title">
+        <h2>Community Posts</h2>
+        <p class="posts-subtitle">Discover what's happening in your network</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="no-posts-container">
+            <div class="no-posts-card">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.7;">📝</div>
+                <h3 style="margin-bottom: 1rem;">No posts yet</h3>
+                <p>Be the first to share something amazing with the community!</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="posts-grid">
+            @foreach (var post in Model)
+            {
+                @await Html.PartialAsync("_PostCard", post)
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        const baseUrl = '@Url.Content("~")';
+
+        $(document).ready(function () {
+            $('.comment-btn').on('click', function () {
+                const postId = $(this).data('post-id');
+                const commentSection = $(`#comments-${postId}`);
+                commentSection.slideToggle(200);
+
+                const list = $('#comment-list-' + postId);
+                list.scrollTop(list[0].scrollHeight);
+            });
+           
+        });
+
+
+        // Like Button Click
+        $('.like-btn').click(function (e) {
+            e.preventDefault();
+
+            const $btn = $(this);
+            const postId = $(this).data('post-id');
+
+            $.ajax({
+                url: '/api/Like/Toggle',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ PostId: postId }),
+                success: function (res) {
+                    $btn.find('.like-count').text(res.likeCount);
+                    $btn.toggleClass('liked');
+                }
+            });
+        });
+
+        // Add Comment
+        function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const content = input.value;
+
+            if (!content.trim()) return;
+
+            $.ajax({
+                url: '/api/Comment/Add',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ PostId: postId, Content: content }),
+                success: function (res) {
+                    const avatarUrl = res.userProfilePhotoPath
+                        ? baseUrl + res.userProfilePhotoPath.replace(/^~\//, '')
+                        : baseUrl + 'images/default-avatar.png';
+
+                    const userName = res.userFirstName || 'You';
+
+                    const commentHtml = `
+                        <div class="comment-item">
+                            <img src="${avatarUrl}" alt="${userName}" class="comment-avatar" />
+                            <div class="comment-bubble">
+                                <strong>${userName}</strong><br />
+                                <span>${res.content}</span>
+                            </div>
+                        </div>`;
+
+                    const list = $(`#comment-list-${postId}`);
+                    list.prepend(commentHtml);
+                    input.value = '';
+
+                    const counter = $(`.comment-btn[data-post-id="${postId}"] .comment-count`);
+                    const newCount = parseInt(counter.text()) + 1;
+                    counter.text(newCount);
+                }
+            });
+        }
+
+
+    </script>
+}

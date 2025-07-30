@@ -250,3 +250,10 @@ C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\AutoMapper.dll
 C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\Microsoft.Extensions.Configuration.FileExtensions.dll
 C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Json.dll
+C:\Users\USER\Desktop\Reconova\obj\Debug\net8.0\Reconova.sourcelink.json
+C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\Microsoft.Extensions.Hosting.Abstractions.dll
+C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\Microsoft.Extensions.ObjectPool.dll
+C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\System.Net.WebSockets.WebSocketProtocol.dll
+C:\Users\USER\Desktop\Reconova\bin\Debug\net8.0\DinkToPdf.dll

@@ -1,0 +1,29 @@
+﻿@model List<Reconova.Data.Models.Notification>
+
+@if (!Model.Any())
+{
+    <p>No notifications found.</p>
+}
+else
+{
+    <ul class="notification-list">
+        @foreach (var notification in Model)
+        {
+            <li id="notification-@notification.Id" class="notification-item @(notification.IsRead == 0 ? "unread" : "")">
+                <img src="@Url.Content(notification.Sender?.ProfilePhotoPath ?? "~/images/default-user.png")"
+                     class="avatar" alt="@notification.Sender?.FirstName" />
+                <div class="notification-text">
+                    <strong>@notification.Sender?.FirstName @notification.Sender?.LastName</strong>
+                    <span>@(notification.Message ?? notification.Type)</span>
+                    <br />
+                    <small>@notification.CreatedDate?.ToLocalTime().ToString("MMM dd, yyyy - HH:mm")</small>
+                </div>
+
+                @if (notification.IsRead == 0)
+                {
+                    <i class="fas fa-eye markRead" onclick="markAsRead(@notification.Id, this)" title="Mark As Read"></i>
+                }
+            </li>
+        }
+    </ul>
+}

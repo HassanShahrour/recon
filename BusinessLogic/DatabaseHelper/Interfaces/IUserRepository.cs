@@ -14,5 +14,9 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Interfaces
         Task<Result<bool>> UpdateUser(User user);
 
         Task<Result<bool>> DeleteUser(string id);
+
+        Task<string> GetLoggedInUserPhoto();
+
+        Task<Result<List<Post>>> GetUserPosts(string userId);
     }
 }

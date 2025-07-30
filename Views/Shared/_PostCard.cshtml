@@ -1,0 +1,85 @@
+﻿@model Reconova.Data.Models.Post
+@using System.Globalization
+
+@{
+    var userId = ViewData["UserId"]?.ToString();
+    var hasLiked = Model.Likes.Any(l => l.UserId == userId);
+}
+
+<article class="post-card">
+    <header class="post-header">
+        <img src="@Url.Content(Model.User?.ProfilePhotoPath)"
+             alt="@Model.User?.FirstName @Model.User?.LastName"
+             class="user-avatar" />
+        <div class="user-info">
+            <h3 class="user-name">@Model.User?.FirstName @Model.User?.LastName</h3>
+            <time class="post-time">
+                @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy 'at' HH:mm", CultureInfo.CurrentCulture)
+            </time>
+        </div>
+    </header>
+
+    <div class="post-content">
+        <p class="post-text">@Model.Content</p>
+
+        @if (Model.Media?.Any() == true)
+        {
+            <div class="post-media">
+                @foreach (var media in Model.Media)
+                {
+                    if (media.FileType == "image")
+                    {
+                        <img src="@media.FilePath"
+                             alt="Post Image"
+                             loading="lazy" />
+                    }
+                    else if (media.FileType == "video")
+                    {
+                        <video controls preload="metadata">
+                            <source src="@media.FilePath" type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                    }
+                }
+            </div>
+        }
+    </div>
+
+    <footer class="post-footer">
+        <div class="post-actions">
+            <a href="#" class="action-btn like-btn @(hasLiked ? "liked" : "")" data-post-id="@Model.Id">
+                <i class="fas fa-heart"></i>
+                <span>Like</span> <span class="like-count">@Model.Likes.Count()</span>
+            </a>
+
+            <a href="javascript:void(0);" class="action-btn comment-btn" data-post-id="@Model.Id">
+                <i class="fas fa-comment"></i>
+                <span>Comment</span> <span class="comment-count">@Model.Comments.Count()</span>
+            </a>
+
+        </div>
+    </footer>
+
+    <div class="comments-section" id="comments-@Model.Id">
+        <div class="comment-form">
+            <input type="text" id="comment-input-@Model.Id" placeholder="Write a comment..." />
+            <button class="btn btn-blue" onclick="addComment('@Model.Id')">Post</button>
+        </div>
+        <div class="comment-list" id="comment-list-@Model.Id">
+            @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+            {
+                <div class="comment-item">
+                    <img src="@Url.Content(comment.User?.ProfilePhotoPath ?? "~/images/default-avatar.png")"
+                         alt="@comment.User?.FirstName"
+                         class="comment-avatar" />
+
+                    <div class="comment-bubble">
+                        <strong>@comment.User?.FirstName</strong><br />
+                        <span>@comment.Content</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</article>
+

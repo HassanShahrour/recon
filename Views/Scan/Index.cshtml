@@ -5,113 +5,280 @@
     int counter = 1;
 }
 
-@section Styles{
-    <link rel="stylesheet" href="~/css/tools.css"/>
+@section Styles {
+    <link rel="stylesheet" href="~/css/tools.css" />
     <link rel="stylesheet" href="~/css/tables.css" />
+    <link rel="stylesheet" href="~/css/scanIndex.css" />
 }
 
-<h2>Analyze Security Scan</h2>
+<div id="topNavButtons" class="mb-4">
+    <a asp-action="Tasks" class="btn-back">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
 
-<form method="post" asp-action="Analyze">
-    <button type="submit" class="btn btn-primary">Analyze Scan</button>
-</form>
+    <span id="btnTools" class="selected-btn">
+        <i class="fas fa-tools me-1"></i> Scan Tools
+    </span>
+    <span id="btnHistory">
+        <i class="fas fa-history me-1"></i> Scan History
+    </span>
+</div>
 
-<form asp-action="StartScan" method="post" class="text-center">
-    <div class="d-flex justify-content-center">
-        <input id="user_input" class="form-control" type="text" name="Target" placeholder="Enter Domain or IP" required />
-        <button class="btn btn-blue" type="submit">Start Scan</button>
-    </div>
-   
-    <section class="d-flex justify-content-center">
 
-        <div id="tools_container" style="margin-top: 1rem;">
-            <label><strong>Select Categories:</strong></label>
 
-            <div id="tools">
-                <input type="text" id="categoriesSearch" class="search form-control" placeholder="Search categories..." />
-                @foreach (var item in Model.Categories)
-                {
-                    <label>
-                       <input type="checkbox" />
-                       @item.Name
-                    </label>
+<div id="loader" style="
+    display:none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+    text-align: center;
+    padding-top: 20%;
+    font-size: 2rem;
+    color: #11295a;
+    ">
+    <i class="fa fa-spinner fa-spin"></i> Loading...
+</div>
 
-                }
-            </div>
+<section id="scanFormSection">
+    <form asp-action="StartScan" method="post" class="text-center">
+        <input type="hidden" name="TaskId" value="@Model.TaskId" />
 
-            <div style="margin-top: 1rem;">
-                <button class="btn btn-blue" type="button" onclick="toggleCategories(true)">Select All</button>
-                <button class="btn btn-danger" type="button" onclick="toggleCategories(false)">Deselect All</button>
-            </div>
-
+        <div class="d-flex justify-content-center">
+            <input id="user_input" class="form-control" type="text" name="Target" placeholder="Enter Domain or IP" value="@Model.Target" readonly required />
+            <button id="startScanBtn" class="btn btn-blue" type="submit">Start Scan</button>
+            <button id="suggest" class="btn btn-blue" type="button" data-bs-toggle="modal" data-bs-target="#suggestModal">
+                <i class="fas fa-star me-1"></i> Suggest
+            </button>
         </div>
 
-        <div id="tools_container" style="margin-top: 1rem;">
-            <label><strong>Select Tools:</strong></label>
+        <section class="d-flex justify-content-center">
 
-            <div id="tools">
-                <input type="text" id="toolsSearch" class="search form-control" placeholder="Search tools..." />
-                @foreach (var item in Model.Tools)
-                {
-                    <label title="@item.Description">
-                        <input type="checkbox" name="Tool" value="@item.Name"/>
-                        @item.Name
-                    </label>
+            <div id="tools_container" style="margin-top: 1rem;">
+                <label><strong>Select Categories:</strong></label>
 
-                }
+                <div id="tools">
+                    <input type="text" id="categoriesSearch" class="search form-control" placeholder="Search categories..." />
+                    @foreach (var item in Model.Categories)
+                    {
+                        <label>
+                            <input type="checkbox" />
+                            @item.Name
+                        </label>
+
+                    }
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-blue" type="button" onclick="toggleCategories(true)">Select All</button>
+                    <button class="btn btn-danger" type="button" onclick="toggleCategories(false)">Deselect All</button>
+                </div>
+
             </div>
 
-            <div style="margin-top: 1rem;">
-                <button class="btn btn-blue" type="button" onclick="toggleTools(true)">Select All</button>
-                <button class="btn btn-danger" type="button" onclick="toggleTools(false)">Deselect All</button>
-            </div>
+            <div id="tools_container" style="margin-top: 1rem;">
+                <label><strong>Select Tool:</strong></label>
 
+                <div id="tools">
+                    <input type="text" id="toolsSearch" class="search form-control" placeholder="Search tools..." />
+                    @foreach (var item in Model.Tools)
+                    {
+                        <label title="@item.Description">
+                            <input type="checkbox" name="Tool" value="@item.Name" />
+                            @item.Name
+                        </label>
+
+                    }
+                </div>
+
+            </div>
+        </section>
+    </form>
+</section>
+
+
+<section id="scanHistorySection" style="display: none;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h5>Scans History</h5>
         </div>
-    </section>
-</form>
-
-<div class="card mt-4">
-    <div class="card-header text-center">
-        <h5>Scans History</h5>
-    </div>
-    <div class="card-body">
-        <table id="Table" class="table table-hover table-bordered table-striped text-center align-middle shadow-sm rounded">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>User</th>
-                    <th>Target</th>
-                    <th>Command</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.ScanResults)
-                {
+        <div class="card-body">
+            <table id="Table" class="table table-hover table-bordered table-striped text-center align-middle shadow-sm rounded">
+                <thead>
                     <tr>
-                        <td>@counter</td>
-                        <td>@item.User?.UserName</td>
-                        <td>@item.Target</td>
-                        <td>@item.Command</td>
-                        <td>@item.Timestamp.ToLocalTime()</td>
-                        <td>
-                            <a asp-controller="Scan" asp-action="ScanResult" asp-route-id="@item.ScanId">
-                                <i class="fa fa-info-circle"></i>
-                            </a>
-                        </td>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Target</th>
+                        <th>Command</th>
+                        <th>Date</th>
+                        <th>Actions</th>
                     </tr>
-                    counter++;
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ScanResults)
+                    {
+                        <tr>
+                            <td>@counter</td>
+                            <td>@item.User?.FirstName @item.User?.LastName</td>
+                            <td>@item.Target</td>
+                            <td>@item.Command</td>
+                            <td>@item.Timestamp.ToLocalTime().ToString("dd-MMMM-yy HH:mm:ss")</td>
+                            <td>
+                                <a asp-controller="Scan" asp-action="ScanResult" asp-route-id="@item.ScanId">
+                                    <i class="fa fa-info-circle"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        counter++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Suggest Modal -->
+<div class="modal fade" id="suggestModal" tabindex="-1" aria-labelledby="suggestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header">
+                <h5 class="modal-title" id="suggestModalLabel">
+                    <i class="fas fa-stars me-2 text-warning"></i> Get Suggested Tools via AI
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="aiPrompt" class="form-control" placeholder="Describe the target or environment..." />
+                    <button class="btn btn-blue" onclick="getSuggestedTools()">Get Tools</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<input type="hidden" id="taskId" value="@Model.TaskId" />
+<button id="exportBtn">Export PDF</button>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-                initializeDataTable('Table');
+            initializeDataTable('Table');
+
+             $('#startScanBtn').on('click', function () {
+                const form = $('form[asp-action="StartScan"]');
+                const input = $('#user_input').val().trim();
+
+                if (input === '') {
+                    Swal.fire('⚠️', 'Please enter a domain or IP address.', 'warning');
+                    return;
+                }
+
+                $('#loader').show();
+
+                setTimeout(function () {
+                    form.submit();
+                }, 100);
+            });
+
+            $('#btnTools, #btnHistory').on('click', function () {
+                $('#btnTools, #btnHistory').removeClass('selected-btn');
+                $(this).addClass('selected-btn');
+            });
+
+             $('#btnTools').on('click', function () {
+                $('#scanFormSection').show();
+                $('#scanHistorySection').hide();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            $('#btnHistory').on('click', function () {
+                $('#scanFormSection').hide();
+                $('#scanHistorySection').show();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            $('#exportBtn').click(function () {
+                const taskId = $('#taskId').val();
+
+                if (!taskId) {
+                    alert('Please enter a Task ID.');
+                    return;
+                }
+
+                const requestData = {
+                    taskId: parseInt(taskId)
+                };
+
+                $.ajax({
+                    url: '/api/report/export',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(requestData),
+                    xhrFields: {
+                        responseType: 'blob' 
+                    },
+                    success: function (data, status, xhr) {
+                        const blob = new Blob([data], { type: 'application/pdf' });
+
+                        const fileName = xhr.getResponseHeader('Content-Disposition')
+                            ?.split('filename=')[1]
+                            ?.replaceAll('"', '') || 'ScanResults_Report.pdf';
+
+                        const link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                    },
+                    error: function (xhr) {
+                        const reader = new FileReader();
+                        reader.onload = function () {
+                            alert("Error: " + reader.result);
+                        };
+                        reader.readAsText(xhr.responseText);
+                    }
+                });
+            });
         });
+
+        async function getSuggestedTools() {
+            var loader = $('#loader');
+            var prompt = $('#aiPrompt').val();
+            if (!prompt.trim()) {
+                Swal.fire('⚠️', 'Please enter a prompt before submitting.', 'warning');
+                return;
+            }
+
+            try {
+                loader.show();
+
+                const response = await fetch('/api/ai/suggested-tools', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
+
+                const data = await response.json();
+
+                Swal.fire({
+                    title: 'Suggested Tools',
+                    html: `<ul>${data.tools.map(t => `<li>${t}</li>`).join('')}</ul>`,
+                    icon: 'info',
+                    confirmButtonColor: '#11295a'
+                });
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            } finally {
+                loader.hide();
+            }
+        }
+
     </script>
 }

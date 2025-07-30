@@ -1,0 +1,82 @@
+﻿@using Reconova.Data
+@model Reconova.Data.Models.User
+@inject ReconovaDbContext db
+
+@{
+    var followersCount = db.UserFollowing.Count(f => f.FolloweeId == Model.Id);
+    var followingCount = db.UserFollowing.Count(f => f.FollowerId == Model.Id);
+}
+
+<div class="profile-container rounded shadow">
+  
+    <div class="cover-container">
+        <img src="@Url.Content(Model.CoverPhotoPath)" class="cover-photo" alt="Cover" />
+    </div>
+
+    <div class="profile-info text-center">
+        <img src="@Url.Content(Model.ProfilePhotoPath)" class="profile-photo" alt="Profile" />
+        <h3 class="mt-3">@Model.FirstName @Model.LastName</h3>
+        <p class="text-muted mb-0">@Model.Header</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body pt-0">
+
+            <ul class="list-inline profile-info-list">
+                
+                <li class="list-inline-item">
+                    <strong>Phone:</strong><br /> @Model.PhoneNumber
+                </li>
+
+                <li class="list-inline-item">
+                    <strong>Email:</strong><br /> @Model.Email
+                </li>
+
+                <li class="list-inline-item">
+                    <strong>Education:</strong><br /> @(Model.Education ?? "N/A")
+                </li>
+
+                <li class="list-inline-item">
+                    <strong>Following:</strong><br /> @followingCount
+                </li>
+
+                <li class="list-inline-item">
+                    <strong>Followers:</strong><br /> @followersCount
+                </li>
+
+                <li class="list-inline-item">
+                    <strong>Joined:</strong><br /> @Model.Timestamp.ToString("dd-MM-yyyy")
+                </li>
+
+            </ul>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">@Model.Bio</p>
+            </div>
+          
+
+            <!--
+            <form asp-action="Follow" asp-controller="User" method="post" class="mt-4 text-center">
+                <input type="hidden" name="followeeId" value="@Model.Id" />
+                <button class="btn btn-blue px-4">Follow</button>
+            </form>-->
+
+            <div class="text-center mt-3">
+                @if (Model.Skills != null && Model.Skills.Any())
+                {
+                    <div class="skill-badges">
+                        @foreach (var skill in Model.Skills)
+                        {
+                            <span class="badge badge-blue me-2 mb-2">@skill.Name</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p>No skills found.</p>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>

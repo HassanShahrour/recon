@@ -1,0 +1,81 @@
+﻿@using Reconova.Core.Utilities
+@using Reconova.Data
+
+@model Reconova.ViewModels.Users.ProfileViewModel
+@inject UserUtility userUtility
+@inject ReconovaDbContext db
+
+@{
+    ViewData["Title"] = "User Profile";
+    var currentUserId = await userUtility.GetLoggedInUserId();
+    bool isFollowing = db.UserFollowing
+        .Any(f => f.FollowerId == currentUserId.ToString() && f.FolloweeId == Model.User.Id);
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" />
+    <link rel="stylesheet" href="~/css/post.css" />
+}
+
+<div class="container">
+    @await Html.PartialAsync("_UserProfileCard", Model.User)
+
+    <div class="mt-3">
+        <a class="btn btn-secondary" asp-action="Index">Back To List</a>
+
+        @if (currentUserId.ToString() != Model.User.Id)
+        {
+            <button class="btn follow-btn @(isFollowing ? "btn-danger" : "btn-blue")"
+                    data-user-id="@Model.User.Id"
+                    data-is-following="@isFollowing.ToString().ToLower()">
+                @(isFollowing ? "Unfollow" : "Follow")
+            </button>
+        }
+    </div>
+
+    <div class="posts-container">
+        <div class="posts-grid">
+            @foreach (var post in Model.Posts)
+            {
+                @await Html.PartialAsync("_PostCard", post)
+            }
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".follow-btn").on("click", function () {
+                const $button = $(this);
+                const userId = $button.data("user-id");
+                const isFollowing = $button.data("is-following") === true;
+                const url = isFollowing ? "/api/follow/unfollow" : "/api/follow/follow";
+
+                $.ajax({
+                    url: url,
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(userId),
+                    success: function (result) {
+                        if (result.success) {
+                            $button.data("is-following", !isFollowing);
+                            $button.text(isFollowing ? "Follow" : "Unfollow");
+                            $button.toggleClass("btn-danger btn-blue");
+                        } else {
+                            alert("Error: " + result.message);
+                            console.error("Server error:", result.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("AJAX error:", error);
+                        alert("Request failed: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -12,7 +12,9 @@
 <div class="card mt-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Tools</h5>
-        <button class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#createToolModal">Create</button>
+        <button class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#createToolModal">
+            <i class="fas fa-plus me-2"></i>Create
+        </button>
     </div>
 
     <div class="card-body">
@@ -35,11 +37,10 @@
                         <td>@item.Description</td>
                         <td>@item.Category?.Name</td>
                         <td>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#editToolModal-@item.Id">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editToolModal-@item.Id" class="me-2">
                                 <i class="fa fa-edit"></i>
                             </a>
-                            <a asp-controller="Tool" asp-action="Delete" asp-route-id="@item.Id"
-                               onclick="return confirm('Are you sure you want to delete this tool?');">
+                            <a href="#" class="deleteTool text-danger" data-id="@item.Id" title="Delete Tool">
                                 <i class="fa fa-trash"></i>
                             </a>
                         </td>
@@ -49,49 +50,36 @@
                     <div class="modal fade" id="editToolModal-@item.Id" tabindex="-1" aria-labelledby="editToolLabel-@item.Id" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <form asp-controller="Tool" asp-action="Edit" method="post">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="editToolLabel-@item.Id">Edit Tool</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editToolLabel-@item.Id">Edit Tool</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" id="editId-@item.Id" value="@item.Id" />
+                                    <div class="mb-3">
+                                        <label for="Name-@item.Id" class="form-label">Tool Name</label>
+                                        <input type="text" class="form-control" id="Name-@item.Id" value="@item.Name" required />
                                     </div>
-                                    <div class="modal-body">
-                                        <input type="hidden" name="Id" value="@item.Id" />
-                                        <div class="mb-3">
-                                            <label for="Name-@item.Id" class="form-label">Tool Name</label>
-                                            <input type="text" class="form-control" id="Name-@item.Id" name="Name" value="@item.Name" required />
-                                        </div>
 
-                                        <div class="mb-3">
-                                            <label for="Category-@item.Id" class="form-label">Tool Category</label>
-                                            <select class="form-control" id="Category-@item.Id" name="CategoryId" required>
-                                                @foreach (var i in Model.Categories)
-                                                {
-                                                    @if (i.Id == item.CategoryId)
-                                                    {
-                                                        <option value="@i.Id" selected>
-                                                            @i.Name
-                                                        </option>
-                                                    } else
-                                                    {
-                                                        <option value="@i.Id">
-                                                            @i.Name
-                                                        </option>
-                                                    }
-                                                }
-                                            </select>   
-                                        </div>
+                                    <div class="mb-3">
+                                        <label for="Category-@item.Id" class="form-label">Tool Category</label>
+                                        <select class="form-select" id="Category-@item.Id" required>
+                                            @foreach (var cat in Model.Categories)
+                                            {
+                                                <option value="@cat.Id">@cat.Name</option>
+                                            }
+                                        </select>
+                                    </div>
 
-                                        <div class="mb-3">
-                                            <label for="Description-@item.Id" class="form-label">Description</label>
-                                            <textarea type="text" class="form-control" id="Description-@item.Id"
-                                                      name="Description" rows="4" required>@item.Description</textarea>
-                                        </div>
+                                    <div class="mb-3">
+                                        <label for="Description-@item.Id" class="form-label">Description</label>
+                                        <textarea class="form-control" id="Description-@item.Id" rows="4" required>@item.Description</textarea>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-primary">Save</button>
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    </div>
-                                </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary submitEdit" data-id="@item.Id">Save</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -107,37 +95,35 @@
 <div class="modal fade" id="createToolModal" tabindex="-1" aria-labelledby="createToolLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form asp-controller="Tool" asp-action="Add" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createToolLabel">Create Tool</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="createToolLabel">Create Tool</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="createName" class="form-label">Tool Name</label>
+                    <input type="text" class="form-control" id="createName" required />
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="Name" class="form-label">Tool Name</label>
-                        <input type="text" class="form-control" id="Name" name="Name" required />
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="Category" class="form-label">Tool Category</label>
-                        <select class="form-control" id="Category" name="CategoryId" required>
-                            @foreach (var i in Model.Categories)
-                            {
-                                <option value="@i.Id">@i.Name</option>
-                            }
-                        </select>
-                    </div>
+                <div class="mb-3">
+                    <label for="createCategory" class="form-label">Tool Category</label>
+                    <select class="form-select" id="createCategory" required>
+                        @foreach (var cat in Model.Categories)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="Description" class="form-label">Description</label>
-                        <textarea type="text" class="form-control" id="Description" name="Description" rows="4" required></textarea>
-                    </div>
+                <div class="mb-3">
+                    <label for="createDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="createDescription" rows="4" required></textarea>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="submitCreate" class="btn btn-primary">Add</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
         </div>
     </div>
 </div>
@@ -145,27 +131,76 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <text>
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: '@TempData["ErrorMessage"]'
-                    });
-                </text>
-            }
+            // Add Tool
+            $("#submitCreate").click(function () {
+                const tool = {
+                    name: $("#createName").val(),
+                    categoryId: parseInt($("#createCategory").val()),
+                    description: $("#createDescription").val()
+                };
 
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <text>
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: '@TempData["SuccessMessage"]'
-                    });
-                </text>
-            }
+                $.ajax({
+                    url: '/api/tool',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(tool),
+                    success: function () {
+                         location.reload();
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error', xhr.responseText || 'Error creating tool', 'error');
+                    }
+                });
+            });
+
+            // Edit Tool
+            $(".submitEdit").click(function () {
+                const id = $(this).data("id");
+                const tool = {
+                    name: $("#Name-" + id).val(),
+                    categoryId: parseInt($("#Category-" + id).val()),
+                    description: $("#Description-" + id).val()
+                };
+
+                $.ajax({
+                    url: '/api/tool/' + id,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(tool),
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error', xhr.responseText || 'Error updating tool', 'error');
+                    }
+                });
+            });
+
+            // Delete Tool
+            $(".deleteTool").click(function () {
+                const id = $(this).data("id");
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will permanently delete the tool.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/api/tool/' + id,
+                            method: 'DELETE',
+                            success: function () {
+                                 location.reload();
+                            },
+                            error: function (xhr) {
+                                Swal.fire('Error', xhr.responseText || 'Error deleting tool', 'error');
+                            }
+                        });
+                    }
+                });
+            });
 
             initializeDataTable('Table');
         });

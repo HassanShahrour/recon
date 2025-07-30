@@ -1,1 +1,287 @@
-﻿
+﻿@using Reconova.BusinessLogic.DatabaseHelper.Interfaces
+@using Reconova.Core.Utilities
+@model List<Reconova.ViewModels.Chat.ChatViewModel>
+@inject IUserRepository userRepository
+
+@{
+    ViewData["Title"] = "Chatting";
+    var username = User.Identity?.Name;
+    var profilePhoto = await userRepository.GetLoggedInUserPhoto();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/chat.css" />
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="row g-0">
+
+            <input type="hidden" id="senderId" value="@ViewBag.SenderId" />
+
+            <!-- Sidebar with user list -->
+            <div class="col-12 col-lg-5 col-xl-3 border-right">
+                <div class="px-4 d-none d-md-block">
+                    <div class="d-flex align-items-center py-2 px-4 border-bottom">
+                        <input type="text" id="searchInput" class="form-control my-1" placeholder="Search users...">
+                    </div>
+                </div>
+                <div class="side">
+                    @foreach (var user in Model)
+                    {
+                        <a href="#" class="list-group-item list-group-item-action border-0 user-item"
+                           data-user-id="@user.UPK"
+                           data-username="@user.Alias"
+                           data-user-photo="@Url.Content(user.UserProfileImage)"
+                           data-unread="@user.UnreadCount">
+                            <div class="d-flex align-items-center">
+                                <img src="@Url.Content(user.UserProfileImage)" class="rounded-circle mr-1" alt="@user.Alias" width="40" height="40">
+                                <div class="flex-grow-1 ml-3 d-flex justify-content-between">
+                                    <span class="online-indicator me-2" id="status-@user.UPK" style="width:10px; height:10px; border-radius:50%; background-color:red; display:inline-block;"></span>
+                                    @user.Alias
+                                    <span id="unread-@user.UPK" class="unread-badge badge bg-danger text-white" @(user.UnreadCount > 0 ? "" : "style=display:none;") data-user-id="@user.UPK">
+                                        @user.UnreadCount
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="area col-12 col-lg-7 col-xl-9">
+                <div class="py-2 px-4 border-bottom bg-blue">
+                    <div class="d-flex align-items-center py-1">
+                        <img id="chatUserPhoto"
+                             src="@(!string.IsNullOrEmpty(profilePhoto) ? Url.Content(profilePhoto) : Url.Content("~/Images/user.jpg"))"
+                             class="rounded-circle mr-1"
+                             alt="User Image"
+                             width="40"
+                             height="40">
+                        <div class="flex-grow-1 pl-3">
+                            <strong id="chatUsername">@username</strong>
+                            <div id="typingIndicator" class="text-muted" style="font-style: italic; display: none;">Typing...</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Chat messages will be dynamically loaded here -->
+                </div>
+                <div class="border-top py-3 px-4">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Type your message">
+                        <button id="sendButton" class="btn btn-blue ml-2">Send</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(async function () {
+            const connection = window.chatConnection;
+            let selectedUserId;
+            let username;
+            let userPhoto;
+            let lastMessageDate = null;
+            let profileUrl = '@Url.Content(profilePhoto)';
+            const senderUserId = $('#senderId').val();
+
+            // 🕒 Wait until SignalR is connected
+            while (connection.state !== signalR.HubConnectionState.Connected) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            console.log("SignalR is connected in view.");
+
+            // ✅ Now it's safe to use connection
+            try {
+                const onlineUsers = await connection.invoke("GetOnlineUsers");
+                onlineUsers.forEach(userId => {
+                    $("#status-" + userId).css("background-color", "green");
+                });
+            } catch (err) {
+                console.error("Failed to fetch online users:", err);
+            }
+
+            // 🔄 Event handlers
+            connection.on("UserTyping", (senderId) => {
+                if (selectedUserId === senderId) {
+                    $('#typingIndicator').text(`${username} is typing...`).show().delay(2000).fadeOut();
+                }
+            });
+
+            connection.on("ReceiveMessage", (senderId, message, messageId) => {
+                if (selectedUserId === senderId) {
+                    const now = new Date();
+                    appendMessage(message, now, 'received', messageId);
+                } else {
+                    incrementUnreadCount(senderId);
+                }
+            });
+
+            connection.on("MessageDeleted", (messageId) => {
+                const messageElement = $(`#message-${messageId}`);
+                if (messageElement.length) {
+                    messageElement.fadeOut(300, function () {
+                        $(this).html("<em>Message is Deleted!</em>")
+                            .addClass("italic rounded bg-secondary p-2")
+                            .fadeIn(300);
+                    });
+                }
+            });
+
+            connection.on("UserOnline", function (userId) {
+                $("#status-" + userId).css("background-color", "green");
+            });
+
+            connection.on("UserOffline", function (userId) {
+                $("#status-" + userId).css("background-color", "red");
+            });
+
+            $('#searchInput').on('input', function () {
+                const searchText = $(this).val().toLowerCase();
+                $('.user-item').each(function () {
+                    const username = $(this).data('username').toLowerCase();
+                    $(this).toggle(username.includes(searchText));
+                });
+            });
+
+            $('.user-item').on('click', async function () {
+                selectedUserId = $(this).data('user-id');
+                username = $(this).data('username');
+                userPhoto = $(this).data('user-photo');
+
+                $('#chatUsername').text(username);
+                $('#chatUserPhoto').attr('src', userPhoto);
+                $('#chatMessages').html("");
+                lastMessageDate = null;
+
+                try {
+                    await connection.invoke("MarkMessageAsRead", selectedUserId, senderUserId);
+                } catch (err) {
+                    console.error("Failed to mark messages as read:", err);
+                }
+
+                const $unreadBadge = $("#unread-" + selectedUserId);
+                $unreadBadge.text('0').hide();
+
+                await loadChatHistory(selectedUserId);
+            });
+
+            $('#sendButton').on('click', sendMessage);
+            $('#messageInput').on('keyup', function (e) {
+                if (e.key === "Enter") sendMessage();
+            });
+
+            $(document).on('click', '.DeleteMsgBtn', async function () {
+                const messageId = $(this).data('message-id');
+                if (!messageId || !selectedUserId) return;
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You won\'t be able to revert this!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, keep it'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            await connection.invoke("DeleteMessage", messageId, senderUserId, selectedUserId);
+                        } catch (err) {
+                            console.error("Error deleting message:", err);
+                            Swal.fire('Error!', 'There was an issue deleting the message.', 'error');
+                        }
+                    }
+                });
+            });
+
+            async function sendMessage() {
+                const message = $('#messageInput').val().trim();
+                if (!selectedUserId || !message) return;
+
+                try {
+                    const messageId = await connection.invoke("SendMessageToUser", selectedUserId, senderUserId, message);
+                    const now = new Date();
+                    appendMessage(message, now, 'sent', messageId);
+                    $('#messageInput').val('');
+                } catch (err) {
+                    console.error("Error sending message:", err);
+                }
+            }
+
+            async function loadChatHistory(userId) {
+                try {
+                    const chatHistory = await connection.invoke("GetChatHistory", senderUserId, userId);
+                    chatHistory.forEach(msg => {
+                        const type = msg.senderId === senderUserId ? 'sent' : 'received';
+                        const messageTime = new Date(msg.time);
+                        appendMessage(msg.message, messageTime, type, msg.id);
+                    });
+                } catch (err) {
+                    console.error("Error loading chat history:", err);
+                }
+            }
+
+            function appendMessage(message, date, type, messageId) {
+                const messageDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                const formattedTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+                if (lastMessageDate !== messageDate) {
+                    $('#chatMessages').append(`
+                        <div class="date-header text-center my-3">
+                            <span class="badge text-muted">${messageDate}</span>
+                        </div>
+                    `);
+                    lastMessageDate = messageDate;
+                }
+
+                const msgHtml = `
+                    <div id="message-${messageId}" class="chat-message-${type === 'sent' ? 'right' : 'left'} mb-4">
+                        <div>
+                            <img src="${type === 'sent' ? profileUrl : userPhoto}" class="rounded-circle" alt="${username}" width="40" height="40" />
+                            <div class="${type === 'sent' ? 'text-white' : 'text-muted'} small text-nowrap mt-2">${formattedTime}</div>
+                        </div>
+                        <div class="message flex-shrink-1 rounded py-2 px-3 ${type === 'sent' ? 'mr-2' : 'ml-2'}">
+                            ${type === 'sent' ? `
+                                <button class="DeleteMsgBtn delete-btn text-white" data-message-id="${messageId}">
+                                    &times;
+                                </button>` : ''}
+                            <span class="message-text">${message}</span>
+                        </div>
+                    </div>
+                `;
+                $('#chatMessages').append(msgHtml);
+                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+            }
+
+            function incrementUnreadCount(userId) {
+                const $badge = $("#unread-" + userId);
+                if ($badge.length) {
+                    const current = parseInt($badge.text()) || 0;
+                    const updated = current + 1;
+                    $badge.text(updated).show();
+
+                    const $userItem = $(`.user-item[data-user-id="${userId}"]`);
+                    $userItem.attr('data-unread', updated);
+
+                    const $container = $userItem.parent();
+                    const $items = $container.children('.user-item');
+                    $items.detach().sort((a, b) => {
+                        const aCount = parseInt($(a).attr('data-unread')) || 0;
+                        const bCount = parseInt($(b).attr('data-unread')) || 0;
+                        return bCount - aCount;
+                    }).appendTo($container);
+                }
+            }
+
+        });
+    </script>
+}
