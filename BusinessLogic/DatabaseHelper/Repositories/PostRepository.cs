@@ -11,25 +11,58 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
     {
         private readonly ReconovaDbContext _context;
         private readonly UserUtility _userUtility;
+        private readonly IUserRepository _userRepository;
 
-        public PostRepository(ReconovaDbContext context, UserUtility userUtility)
+        public PostRepository(ReconovaDbContext context, UserUtility userUtility, IUserRepository userRepository)
         {
             _context = context;
             _userUtility = userUtility;
+            _userRepository = userRepository;
         }
 
         public async Task<Result<List<Post>>> GetAllPosts()
         {
             try
             {
-                var posts = await _context.Post
-                    .Include(p => p.User)
-                    .Include(p => p.Media)
-                    .Include(p => p.Likes)
-                    .Include(p => p.Comments)
-                        .ThenInclude(c => c.User)
-                    .OrderByDescending(p => p.CreatedAt)
-                    .ToListAsync();
+                var userId = await _userUtility.GetLoggedInUserId();
+                var userResult = await _userRepository.GetUserById(userId.ToString());
+
+                if (!userResult.IsSuccess || userResult.Value == null)
+                    return Result<List<Post>>.Failure("User not found.");
+
+                var user = userResult.Value;
+
+                List<Post> posts;
+
+                if (user.Role == "Admin")
+                {
+                    // Admin sees all posts
+                    posts = await _context.Post
+                        .Include(p => p.User)
+                        .Include(p => p.Media)
+                        .Include(p => p.Likes)
+                        .Include(p => p.Comments)
+                            .ThenInclude(c => c.User)
+                        .OrderByDescending(p => p.CreatedAt)
+                        .ToListAsync();
+                }
+                else
+                {
+                    var followedUserIds = await _context.UserFollowing
+                        .Where(f => f.FollowerId == user.Id)
+                        .Select(f => f.FolloweeId)
+                        .ToListAsync();
+
+                    posts = await _context.Post
+                        .Where(p => followedUserIds.Contains(p.UserId))
+                        .Include(p => p.User)
+                        .Include(p => p.Media)
+                        .Include(p => p.Likes)
+                        .Include(p => p.Comments)
+                            .ThenInclude(c => c.User)
+                        .OrderByDescending(p => p.CreatedAt)
+                        .ToListAsync();
+                }
 
                 if (posts == null || !posts.Any())
                 {
@@ -43,6 +76,7 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
                 return Result<List<Post>>.Failure($"An error occurred while retrieving posts: {ex.Message}");
             }
         }
+
 
         public async Task<Result<bool>> CreatePostAsync(Post post, List<IFormFile>? mediaFiles)
         {

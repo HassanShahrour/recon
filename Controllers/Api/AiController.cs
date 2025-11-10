@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Reconova.Settings;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
+[Authorize]
 [Route("api/ai")]
 [ApiController]
 public class AiController : ControllerBase

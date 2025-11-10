@@ -33,7 +33,7 @@
 <body id="body-pd">
     <header class="header" id="header">
         <div class="header_toggle"> <i class='fa fa-bars' id="header-toggle"></i> </div>
-        <span class="">@user</span>
+       
 
         <div class="d-flex gap-4">
             <a asp-controller="Notification" asp-action="Index" class="notification-icon">
@@ -57,29 +57,45 @@
                 </a>
                 <div class="nav_list">
 
-                    <a asp-controller="Home" asp-action="Index" class="nav_link active">
-                        <i class="fa fa-chart-bar nav_icon"></i>
-                        <span class="nav_name">Dashboard</span>
-                    </a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Home" asp-action="Index" class="nav_link active">
+                            <i class="fa fa-chart-bar nav_icon"></i>
+                            <span class="nav_name">Dashboard</span>
+                        </a>
+
+                        <a asp-controller="Plan" asp-action="Index" class="nav_link">
+                            <i class="fa fa-credit-card nav_icon"></i>
+                            <span class="nav_name">Plans</span>
+                        </a>
+
+                        <a asp-controller="Category" asp-action="Index" class="nav_link">
+                            <i class="fa fa-layer-group nav_icon"></i>
+                            <span class="nav_name">Categories</span>
+                        </a>
+
+                        <a asp-controller="Tool" asp-action="Index" class="nav_link">
+                            <i class="fa fa-tools nav_icon"></i>
+                            <span class="nav_name">Tools</span>
+                        </a>
+
+                        <a asp-controller="User" asp-action="Index" class="nav_link">
+                            <i class="fa fa-users nav_icon"></i>
+                            <span class="nav_name">Users</span>
+                        </a>
+                    }
+
+                     @if (User.IsInRole("User"))
+                    {
+                        <a asp-controller="Plan" asp-action="Offers" class="nav_link">
+                            <i class="fa fa-credit-card nav_icon"></i>
+                            <span class="nav_name">Plans</span>
+                        </a>    
+                    }
 
                     <a asp-controller="Scan" asp-action="Tasks" class="nav_link">
                         <i class="fa fa-bug nav_icon"></i>
                         <span class="nav_name">Scan</span>
-                    </a>
-
-                    <a asp-controller="Category" asp-action="Index" class="nav_link">
-                        <i class="fa fa-th-large nav_icon"></i>
-                        <span class="nav_name">Categories</span>
-                    </a>
-
-                    <a asp-controller="Tool" asp-action="Index" class="nav_link">
-                        <i class="fa fa-tools nav_icon"></i>
-                        <span class="nav_name">Tools</span>
-                    </a>
-
-                    <a asp-controller="User" asp-action="Index" class="nav_link">
-                        <i class="fa fa-users nav_icon"></i>
-                        <span class="nav_name">Users</span>
                     </a>
 
                     <a asp-controller="Network" asp-action="Index" class="nav_link">
@@ -105,16 +121,20 @@
                 </div>
             </div>
 
-            <partial name="_LoginPartial" />
+            <partial name="_LoginPartial"/>
            
         </nav>
     </div>
 
-    <div class="container height-100">
+    <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
+    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=hassanshahrour04@gmail.com" class="floating-email-btn" title="Send me an email">
+        <i class="fas fa-envelope"></i>
+    </a>
 
     
     <script src="~/lib/jquery/dist/jquery.js"></script>
@@ -141,6 +161,36 @@
     <script src="~/js/SignalR.js"></script>
 
     <script>
+        @if (TempData["Success"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: '@TempData["Success"]',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            </text>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: '@TempData["Error"]',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            </text>
+        }
+
+
+
         let unreadCount = @count;
 
         window.chatConnection = new signalR.HubConnectionBuilder()

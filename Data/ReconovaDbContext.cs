@@ -22,11 +22,13 @@ namespace Reconova.Data
         public DbSet<ChatMessage> ChatMessage { get; set; }
         public DbSet<Tasks> Tasks { get; set; }
         public DbSet<Notification> Notification { get; set; }
+        public DbSet<Plan> Plan { get; set; }
+        public DbSet<ScheduledScan> ScheduledScan { get; set; }
+        public DbSet<ScheduledTool> ScheduledTool { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
 
             // Tasks → User (many-to-1)
             modelBuilder.Entity<Tasks>()
@@ -77,7 +79,7 @@ namespace Reconova.Data
                 .HasOne(t => t.Category)
                 .WithMany()
                 .HasForeignKey(t => t.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // UserFollowing configuration
             modelBuilder.Entity<UserFollowing>()

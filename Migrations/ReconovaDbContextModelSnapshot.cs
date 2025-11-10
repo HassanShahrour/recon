@@ -354,6 +354,46 @@ namespace Reconova.Migrations
                     b.ToTable("Pcs");
                 });
 
+            modelBuilder.Entity("Reconova.Data.Models.Plan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanGenerateReport")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("DurationInDays")
+                        .HasColumnType("int");
+
+                    b.Property<sbyte>("IsDeleted")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int>("MaxScansPerDay")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Plan");
+                });
+
             modelBuilder.Entity("Reconova.Data.Models.Post", b =>
                 {
                     b.Property<string>("Id")
@@ -434,6 +474,9 @@ namespace Reconova.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Tool")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
@@ -445,6 +488,64 @@ namespace Reconova.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ScanResults");
+                });
+
+            modelBuilder.Entity("Reconova.Data.Models.ScheduledScan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeOnly>("Time")
+                        .HasColumnType("time(6)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ScheduledScan");
+                });
+
+            modelBuilder.Entity("Reconova.Data.Models.ScheduledTool", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ScheduledScanId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tool")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ToolId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScheduledScanId");
+
+                    b.ToTable("ScheduledTool");
                 });
 
             modelBuilder.Entity("Reconova.Data.Models.Skill", b =>
@@ -527,12 +628,17 @@ namespace Reconova.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("PlanId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("PlanId");
 
                     b.ToTable("Tools");
                 });
@@ -551,6 +657,9 @@ namespace Reconova.Migrations
 
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date");
+
+                    b.Property<bool>("CanGenerateReport")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -585,6 +694,9 @@ namespace Reconova.Migrations
                     b.Property<bool>("IsOnline")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("IsPlanActive")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -615,6 +727,15 @@ namespace Reconova.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<DateTime>("PlanEndDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PlanStartDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("ProfilePhotoPath")
                         .HasColumnType("longtext");
 
@@ -642,6 +763,8 @@ namespace Reconova.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("PlanId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -854,6 +977,17 @@ namespace Reconova.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Reconova.Data.Models.ScheduledTool", b =>
+                {
+                    b.HasOne("Reconova.Data.Models.ScheduledScan", "ScheduledScan")
+                        .WithMany("ToolsUsed")
+                        .HasForeignKey("ScheduledScanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ScheduledScan");
+                });
+
             modelBuilder.Entity("Reconova.Data.Models.Skill", b =>
                 {
                     b.HasOne("Reconova.Data.Models.User", "User")
@@ -879,10 +1013,27 @@ namespace Reconova.Migrations
                     b.HasOne("Reconova.Data.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Reconova.Data.Models.Plan", "Plan")
+                        .WithMany("Tools")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Plan");
+                });
+
+            modelBuilder.Entity("Reconova.Data.Models.User", b =>
+                {
+                    b.HasOne("Reconova.Data.Models.Plan", "Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId");
+
+                    b.Navigation("Plan");
                 });
 
             modelBuilder.Entity("Reconova.Data.Models.UserFollowing", b =>
@@ -904,6 +1055,11 @@ namespace Reconova.Migrations
                     b.Navigation("Follower");
                 });
 
+            modelBuilder.Entity("Reconova.Data.Models.Plan", b =>
+                {
+                    b.Navigation("Tools");
+                });
+
             modelBuilder.Entity("Reconova.Data.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -916,6 +1072,11 @@ namespace Reconova.Migrations
             modelBuilder.Entity("Reconova.Data.Models.ScanResult", b =>
                 {
                     b.Navigation("AIResult");
+                });
+
+            modelBuilder.Entity("Reconova.Data.Models.ScheduledScan", b =>
+                {
+                    b.Navigation("ToolsUsed");
                 });
 
             modelBuilder.Entity("Reconova.Data.Models.Tasks", b =>

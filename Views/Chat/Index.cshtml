@@ -203,9 +203,20 @@
                 });
             });
 
+            function sanitizeInput(input) {
+                return input
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;");
+            }
+
             async function sendMessage() {
-                const message = $('#messageInput').val().trim();
+                let  message = $('#messageInput').val().trim();
                 if (!selectedUserId || !message) return;
+
+                message = sanitizeInput(message);
 
                 try {
                     const messageId = await connection.invoke("SendMessageToUser", selectedUserId, senderUserId, message);
@@ -223,7 +234,8 @@
                     chatHistory.forEach(msg => {
                         const type = msg.senderId === senderUserId ? 'sent' : 'received';
                         const messageTime = new Date(msg.time);
-                        appendMessage(msg.message, messageTime, type, msg.id);
+                        const safeMessage = sanitizeInput(msg.message);
+                        appendMessage(safeMessage, messageTime, type, msg.id);
                     });
                 } catch (err) {
                     console.error("Error loading chat history:", err);

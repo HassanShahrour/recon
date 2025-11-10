@@ -10,7 +10,7 @@ else
         @foreach (var notification in Model)
         {
             <li id="notification-@notification.Id" class="notification-item @(notification.IsRead == 0 ? "unread" : "")">
-                <img src="@Url.Content(notification.Sender?.ProfilePhotoPath ?? "~/images/default-user.png")"
+                <img src="@Url.Content(notification.Sender?.ProfilePhotoPath ?? "~/images/account-bg.jpg")"
                      class="avatar" alt="@notification.Sender?.FirstName" />
                 <div class="notification-text">
                     <strong>@notification.Sender?.FirstName @notification.Sender?.LastName</strong>

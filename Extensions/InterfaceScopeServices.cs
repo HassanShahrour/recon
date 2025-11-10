@@ -3,6 +3,7 @@ using DinkToPdf.Contracts;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.BusinessLogic.DatabaseHelper.Repositories;
 using Reconova.Core.Utilities;
+using Reconova.Services;
 
 namespace Reconova.Extensions
 {
@@ -19,9 +20,15 @@ namespace Reconova.Extensions
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IDashboardRepository, DashboardRepository>();
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
+            services.AddScoped<IPlanRepository, PlanRepository>();
+            services.AddScoped<IScheduleScansRepository, ScheduleScansRepository>();
             services.AddScoped<ScanUtility>();
             services.AddScoped<UserUtility>();
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+            services.AddHostedService<DailyScanScheduler>();
+            services.AddHostedService<PlanExpiryCheckerService>();
 
             return services;
         }

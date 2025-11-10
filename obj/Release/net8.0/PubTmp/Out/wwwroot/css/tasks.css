@@ -1,0 +1,24 @@
+﻿.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        border: 1px solid #007bff25;
+    }
+
+.down {
+    border-top: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.btn-danger {
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+
+    .btn-danger:hover {
+        opacity: 1;
+    }
+

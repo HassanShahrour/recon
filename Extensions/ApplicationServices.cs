@@ -26,6 +26,8 @@ namespace Reconova.Extensions
                 options.SignIn.RequireConfirmedAccount = false;
                 options.SignIn.RequireConfirmedEmail = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
+                options.Lockout.MaxFailedAccessAttempts = 3;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
             })
             .AddEntityFrameworkStores<ReconovaDbContext>()
             .AddDefaultTokenProviders();
@@ -65,6 +67,11 @@ namespace Reconova.Extensions
             });
 
             services.Configure<OpenRouterSettings>(configuration.GetSection("OpenRouter"));
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.AccessDeniedPath = "/Account/AccessDenied";
+            });
 
             return services;
         }

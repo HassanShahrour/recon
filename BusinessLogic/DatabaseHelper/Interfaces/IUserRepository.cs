@@ -6,6 +6,7 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Interfaces
     public interface IUserRepository
     {
         Task<Result<List<User>>> GetAllUsers();
+        Task<Result<List<User>>> GetAllUsersExceptLoggedIn();
 
         Task<Result<User>> GetUserById(string id);
 

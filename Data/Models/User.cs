@@ -50,6 +50,13 @@ namespace Reconova.Data.Models
 
         public bool IsOnline { get; set; } = false;
 
+        [ForeignKey("PlanId")]
+        public int? PlanId { get; set; } = null;
+        public DateTime PlanStartDate { get; set; }
+        public DateTime PlanEndDate { get; set; }
+        public bool IsPlanActive { get; set; }
+        public bool CanGenerateReport { get; set; } = false;
+
         public ICollection<ScanResult>? ScanResults { get; set; }
         public ICollection<AIResult>? AIResults { get; set; }
 
@@ -63,5 +70,6 @@ namespace Reconova.Data.Models
         public ICollection<Post>? Posts { get; set; }
 
         public ICollection<Tasks>? Tasks { get; set; }
+        public Plan? Plan { get; set; }
     }
 }

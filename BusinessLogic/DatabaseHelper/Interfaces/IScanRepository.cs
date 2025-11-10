@@ -10,6 +10,10 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Interfaces
 
         Task<Result<ScanResult>> GetScanResultById(string id);
 
-        Task<Result<bool>> AddScan(string scanId, int taskId, string target, string command, string output, string reply);
+        Task<Result<bool>> AddScan(string userId, string scanId, int taskId, string target, string tool, string command, string output, string reply);
+
+        Task<Result<bool>> DeleteScan(int id);
+
+        Task<Result<bool>> CanUserScanToday();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Core.Utilities;
@@ -8,6 +9,8 @@ using Reconova.Hubs;
 
 namespace Reconova.Controllers.Api
 {
+
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FollowController : ControllerBase

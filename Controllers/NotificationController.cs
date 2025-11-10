@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Data.Models;
 
 namespace Reconova.Controllers
 {
+
+    [Authorize]
     public class NotificationController : Controller
     {
         private readonly INotificationRepository _notificationRepository;

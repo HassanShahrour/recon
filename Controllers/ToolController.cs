@@ -1,20 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Data.Models;
 using Reconova.ViewModels.Tools;
 
 namespace Reconova.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ToolController : Controller
     {
+        private readonly IToolsRepository _toolsRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IPlanRepository _planRepository;
 
-        public readonly IToolsRepository _toolsRepository;
-        public readonly ICategoryRepository _categoryRepository;
-
-        public ToolController(IToolsRepository toolsRepository, ICategoryRepository categoryRepository)
+        public ToolController(IToolsRepository toolsRepository, ICategoryRepository categoryRepository, IPlanRepository planRepository)
         {
             _toolsRepository = toolsRepository;
             _categoryRepository = categoryRepository;
+            _planRepository = planRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -22,20 +25,27 @@ namespace Reconova.Controllers
             try
             {
                 var tools = await _toolsRepository.GetAllTools();
-
                 var categories = await _categoryRepository.GetAllCategories();
+                var plans = await _planRepository.GetAllPlans();
+
+                if (!tools.IsSuccess || !categories.IsSuccess || !plans.IsSuccess)
+                {
+                    TempData["Error"] = "Failed to load tools, categories, or plans.";
+                    return View(new ToolViewModel());
+                }
 
                 var model = new ToolViewModel
                 {
                     Tools = tools.Value ?? new List<Tool>(),
                     Categories = categories.Value ?? new List<Category>(),
+                    Plans = plans.Value ?? new List<Plan>()
                 };
 
-                return View(model ?? new ToolViewModel());
+                return View(model);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Unexpected error: {ex.Message}";
+                TempData["Error"] = $"Unexpected error loading tools: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -47,41 +57,59 @@ namespace Reconova.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _toolsRepository.AddTool(tool);
-            if (result.IsSuccess)
-                return Ok(tool);
+            try
+            {
+                var result = await _toolsRepository.AddTool(tool);
+                if (result.IsSuccess)
+                    return Ok(tool);
 
-            return StatusCode(500, "Failed to add tool");
+                return StatusCode(500, result.Error ?? "Failed to add tool");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Unexpected error adding tool: {ex.Message}");
+            }
         }
 
         [HttpPut]
         [Route("api/tool/{id}")]
         public async Task<IActionResult> EditToolApi(int id, [FromBody] Tool updatedTool)
         {
-            var existing = await _toolsRepository.GetToolById(id);
-            if (!existing.IsSuccess || existing.Value == null)
-                return NotFound("Tool not found");
+            try
+            {
+                var existing = await _toolsRepository.GetToolById(id);
+                if (!existing.IsSuccess || existing.Value == null)
+                    return NotFound("Tool not found");
 
-            updatedTool.Id = id;
+                updatedTool.Id = id;
+                var result = await _toolsRepository.UpdateTool(updatedTool);
+                if (result.IsSuccess)
+                    return Ok(updatedTool);
 
-            var result = await _toolsRepository.UpdateTool(updatedTool);
-            if (result.IsSuccess)
-                return Ok(updatedTool);
-
-            return StatusCode(500, "Failed to update tool");
+                return StatusCode(500, result.Error ?? "Failed to update tool");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Unexpected error updating tool: {ex.Message}");
+            }
         }
 
         [HttpDelete]
         [Route("api/tool/{id}")]
         public async Task<IActionResult> DeleteToolApi(int id)
         {
-            var result = await _toolsRepository.DeleteTool(id);
-            if (result.IsSuccess)
-                return NoContent();
+            try
+            {
+                var result = await _toolsRepository.DeleteTool(id);
+                if (result.IsSuccess)
+                    return NoContent();
 
-            return StatusCode(500, "Failed to delete tool");
+                return StatusCode(500, result.Error ?? "Failed to delete tool");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Unexpected error deleting tool: {ex.Message}");
+            }
         }
-
-
     }
 }

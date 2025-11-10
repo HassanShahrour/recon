@@ -17,6 +17,8 @@ namespace Reconova.Data.Models
         [Required]
         public string? Target { get; set; }
 
+        public string? Tool { get; set; }
+
         public string? Command { get; set; }
 
         public string? Output { get; set; }

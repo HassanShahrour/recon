@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
@@ -9,6 +10,8 @@ using Reconova.Hubs;
 
 namespace Reconova.Controllers.Api
 {
+
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CommentController : ControllerBase

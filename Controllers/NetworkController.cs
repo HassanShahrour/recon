@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Data.Models;
 using Reconova.ViewModels.Users;
 
 namespace Reconova.Controllers
 {
+
+    [Authorize]
     public class NetworkController : Controller
     {
 
@@ -19,7 +22,7 @@ namespace Reconova.Controllers
         {
             try
             {
-                var users = await _userRepository.GetAllUsers();
+                var users = await _userRepository.GetAllUsersExceptLoggedIn();
                 return View(users.Value ?? new List<User>());
             }
             catch (Exception ex)

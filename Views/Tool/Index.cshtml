@@ -25,6 +25,7 @@
                     <th>Name</th>
                     <th>Description</th>
                     <th>Category</th>
+                    <th>Plan</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -36,6 +37,7 @@
                         <td>@item.Name</td>
                         <td>@item.Description</td>
                         <td>@item.Category?.Name</td>
+                        <td>@item.Plan?.Name</td>
                         <td>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#editToolModal-@item.Id" class="me-2">
                                 <i class="fa fa-edit"></i>
@@ -47,7 +49,7 @@
                     </tr>
 
                     <!-- Edit Modal -->
-                    <div class="modal fade" id="editToolModal-@item.Id" tabindex="-1" aria-labelledby="editToolLabel-@item.Id" aria-hidden="true">
+                    <div class="modal fade" id="editToolModal-@item.Id"  data-category-id="@item.CategoryId" data-plan-id="@item.PlanId" tabindex="-1" aria-labelledby="editToolLabel-@item.Id" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -63,10 +65,20 @@
 
                                     <div class="mb-3">
                                         <label for="Category-@item.Id" class="form-label">Tool Category</label>
-                                        <select class="form-select" id="Category-@item.Id" required>
+                                        <select class="form-select" id="Category-@item.Id" name="CategoryId" required>
                                             @foreach (var cat in Model.Categories)
                                             {
                                                 <option value="@cat.Id">@cat.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="Plan-@item.Id" class="form-label">Plan</label>
+                                        <select class="form-select" id="Plan-@item.Id" required>
+                                            @foreach (var plan in Model.Plans)
+                                            {
+                                                <option value="@plan.Id">@plan.Name</option>
                                             }
                                         </select>
                                     </div>
@@ -116,6 +128,16 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="createPlan" class="form-label">Plan</label>
+                    <select class="form-select" id="createPlan" required>
+                        @foreach (var plan in Model.Plans)
+                        {
+                            <option value="@plan.Id">@plan.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
                     <label for="createDescription" class="form-label">Description</label>
                     <textarea class="form-control" id="createDescription" rows="4" required></textarea>
                 </div>
@@ -131,11 +153,24 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            $('[id^="editToolModal-"]').on('show.bs.modal', function () {
+                const modal = $(this);
+                const id = modal.attr('id').split('-')[1];
+
+                const categoryId = modal.data('category-id');
+                const planId = modal.data('plan-id');
+
+                $("#Category-" + id).val(categoryId);
+                $("#Plan-" + id).val(planId);
+            });
+
+
             // Add Tool
             $("#submitCreate").click(function () {
                 const tool = {
                     name: $("#createName").val(),
                     categoryId: parseInt($("#createCategory").val()),
+                    planId: parseInt($("#createPlan").val()),
                     description: $("#createDescription").val()
                 };
 
@@ -159,6 +194,7 @@
                 const tool = {
                     name: $("#Name-" + id).val(),
                     categoryId: parseInt($("#Category-" + id).val()),
+                    planId: parseInt($("#Plan-" + id).val()),
                     description: $("#Description-" + id).val()
                 };
 

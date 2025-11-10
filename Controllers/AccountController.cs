@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Core.Utilities;
@@ -10,21 +11,30 @@ namespace Reconova.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly IEmailSender _emailSender;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
         private readonly UserUtility _userUtility;
 
         public AccountController(
+            IEmailSender emailSender,
             SignInManager<User> signInManager,
             UserManager<User> userManager,
             IUserRepository userRepository,
             UserUtility userUtility)
         {
+            _emailSender = emailSender;
             _signInManager = signInManager;
             _userManager = userManager;
             _userRepository = userRepository;
             _userUtility = userUtility;
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
 
         public IActionResult Login() => View();
@@ -34,14 +44,30 @@ namespace Reconova.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user?.IsDeleted == 1)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid credentials!");
+                return View(model);
+            }
+
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
 
             if (result.Succeeded)
-                return RedirectToAction("Index", "Home");
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+
+                if (roles.Contains("Admin"))
+                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Tasks", "Scan");
+            }
 
             ModelState.AddModelError(string.Empty, "Invalid credentials!");
             return View(model);
         }
+
 
         public IActionResult Register() => View();
 
@@ -64,13 +90,24 @@ namespace Reconova.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
-                return RedirectToAction("Index", "Home");
+            {
+                await _userManager.AddToRoleAsync(user, "User");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                if (roles.Contains("Admin"))
+                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Tasks", "Scan");
+            }
 
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
             return View(model);
         }
+
 
         public IActionResult VerifyEmail() => View();
 
@@ -80,15 +117,65 @@ namespace Reconova.Controllers
             if (!ModelState.IsValid) return View(model);
 
             var user = await _userManager.FindByNameAsync(model.Email);
-
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Something is wrong!");
                 return View(model);
             }
 
-            return RedirectToAction("ChangePassword", new { username = user.UserName });
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            HttpContext.Session.SetString("OTP_Email", model.Email);
+            HttpContext.Session.SetString("OTP_Code", otp);
+            HttpContext.Session.SetString("OTP_Expiry", DateTime.UtcNow.AddMinutes(5).ToString("O"));
+
+            await _emailSender.SendEmailAsync(model.Email, "Your OTP Code", $"Your OTP is: {otp}");
+
+            return RedirectToAction("VerifyOtp");
         }
+
+        [HttpGet]
+        public IActionResult VerifyOtp()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult VerifyOtp(VerifyOtpDTO model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var storedOtp = HttpContext.Session.GetString("OTP_Code");
+            var storedEmail = HttpContext.Session.GetString("OTP_Email");
+            var expiryString = HttpContext.Session.GetString("OTP_Expiry");
+
+            if (storedOtp == null || storedEmail == null || expiryString == null)
+            {
+                ModelState.AddModelError("", "OTP session expired. Please try again.");
+                return View(model);
+            }
+
+            var expiry = DateTime.Parse(expiryString);
+            if (DateTime.UtcNow > expiry)
+            {
+                ModelState.AddModelError("", "OTP expired. Please request again.");
+                return View(model);
+            }
+
+            if (model.OtpCode != storedOtp)
+            {
+                ModelState.AddModelError("", "Invalid OTP.");
+                return View(model);
+            }
+
+            HttpContext.Session.Remove("OTP_Code");
+            HttpContext.Session.Remove("OTP_Expiry");
+
+            return RedirectToAction("ChangePassword", new { username = storedEmail });
+        }
+
+
+
 
         public IActionResult ChangePassword(string username)
         {
@@ -107,7 +194,7 @@ namespace Reconova.Controllers
                 return View(model);
             }
 
-            var user = await _userManager.FindByNameAsync(User.Identity?.Name ?? "");
+            var user = await _userManager.FindByNameAsync(model.Email ?? "");
 
             if (user == null)
             {
@@ -133,12 +220,16 @@ namespace Reconova.Controllers
             return View(model);
         }
 
+
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
 
+
+        [Authorize]
         public async Task<IActionResult> Profile()
         {
             try
@@ -160,6 +251,8 @@ namespace Reconova.Controllers
             }
         }
 
+
+        [Authorize]
         public async Task<IActionResult> Edit()
         {
             try
@@ -195,6 +288,8 @@ namespace Reconova.Controllers
             }
         }
 
+
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Edit(EditUserViewModel model)
         {

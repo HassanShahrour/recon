@@ -13,6 +13,8 @@ namespace Reconova.Data.Models
         [Required]
         public int CategoryId { get; set; }
 
+        public int PlanId { get; set; }
+
         [Required]
         public string? Description { get; set; }
 
@@ -20,5 +22,6 @@ namespace Reconova.Data.Models
         public sbyte IsDeleted { get; set; } = 0;
 
         public Category? Category { get; set; }
+        public Plan? Plan { get; set; }
     }
 }

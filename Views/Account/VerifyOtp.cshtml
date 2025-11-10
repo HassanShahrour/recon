@@ -1,0 +1,28 @@
+﻿@model Reconova.Data.DTOs.User.VerifyOtpDTO
+
+@{
+    ViewData["Title"] = "Verify OTP";
+    Layout = "~/Views/Shared/_AccountLayout.cshtml";
+}
+
+<div class="account-container">
+    <div class="account-box">
+        <h2 class="text-center mb-4">Verify OTP</h2>
+
+        <form asp-action="VerifyOtp" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="OtpCode" class="form-label"></label>
+                <input asp-for="OtpCode" class="form-control" />
+                <span asp-validation-for="OtpCode" class="text-danger"></span>
+            </div>
+
+            <input type="submit" value="Verify" class="btn btn-blue w-100 p-2" />
+
+            <div class="text-center mt-2">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none mt-3">Back</a>
+            </div>
+        </form>
+    </div>
+</div>

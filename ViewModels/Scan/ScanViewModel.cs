@@ -9,5 +9,6 @@ namespace Reconova.ViewModels.Scan
         public List<ScanResult> ScanResults { get; set; } = new List<ScanResult>();
         public List<Category> Categories { get; set; } = new List<Category>();
         public List<Tool> Tools { get; set; } = new List<Tool>();
+        public List<ScheduledScan> ScheduledScans { get; set; } = new List<ScheduledScan>();
     }
 }

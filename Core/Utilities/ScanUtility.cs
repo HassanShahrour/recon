@@ -11,8 +11,10 @@ namespace Reconova.Core.Utilities
     public class ScanUtility
     {
         private readonly IScanRepository _scanRepository;
+        private readonly UserUtility _userUtility;
         private readonly string? _apiKey;
         private readonly string? _apiUrl;
+        private readonly IToolsRepository _toolsRepository;
 
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
@@ -20,15 +22,24 @@ namespace Reconova.Core.Utilities
             WriteIndented = false
         };
 
-        public ScanUtility(IOptions<OpenRouterSettings> options, IScanRepository scanRepository)
+        public ScanUtility(IOptions<OpenRouterSettings> options, IScanRepository scanRepository, UserUtility userUtility, IToolsRepository toolsRepository)
         {
             _apiKey = options.Value.ApiKey;
             _apiUrl = options.Value.ApiUrl;
             _scanRepository = scanRepository;
+            _userUtility = userUtility;
+            _toolsRepository = toolsRepository;
         }
 
-        public async Task<string> StartReconScanAsync(string target, string tool, int taskId)
+        public async Task<string> StartReconScanAsync(string userId, string target, string tool, int taskId)
         {
+            //var toolName = await _toolsRepository.GetToolIdByName("tool");
+            //if (toolName == null)
+            //{
+            //    Console.WriteLine($"[ERROR] Tool '{tool}' not found in the database.");
+            //    return Guid.NewGuid().ToString();
+            //}
+
             var scanId = Guid.NewGuid().ToString();
             var command = $"{tool} {target}";
 
@@ -36,7 +47,7 @@ namespace Reconova.Core.Utilities
 
             try
             {
-                output = await RunProcessAsync("wsl", command);
+                output = await RunProcessAsync("wsl", $"docker exec reconova-runner {command}");
             }
             catch (Exception ex)
             {
@@ -92,7 +103,7 @@ namespace Reconova.Core.Utilities
                                .GetProperty("content")
                                .GetString();
 
-                await _scanRepository.AddScan(scanId, taskId, target, command, output, reply ?? "No response");
+                await _scanRepository.AddScan(userId, scanId, taskId, target, tool, command, output, reply ?? "No response");
             }
             catch (JsonException jsonEx)
             {

@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Core.Utilities;
 using Reconova.ViewModels.Chat;
 
 namespace FMS.APP.Controllers
 {
+
+    [Authorize]
     [Route("chat")]
     public class ChatController : Controller
     {

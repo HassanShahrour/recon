@@ -1,29 +1,418 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model Reconova.ViewModels.Dashboard.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var toolsLabelsJson = System.Text.Json.JsonSerializer.Serialize(Model.ToolUsage.Keys);
+    var toolsCountsJson = System.Text.Json.JsonSerializer.Serialize(Model.ToolUsage.Values);
+
+    var trendsLabelsJson = System.Text.Json.JsonSerializer.Serialize(Model.RegistrationTrends.Keys);
+    var trendsValuesJson = System.Text.Json.JsonSerializer.Serialize(Model.RegistrationTrends.Values);
+
+    var categoryLabels = System.Text.Json.JsonSerializer.Serialize(Model.CategoryDistribution.Keys);
+    var categoryCounts = System.Text.Json.JsonSerializer.Serialize(Model.CategoryDistribution.Values);
+
+    var followLabels = System.Text.Json.JsonSerializer.Serialize(Model.TopFollowers.Keys);
+    var followData = System.Text.Json.JsonSerializer.Serialize(Model.TopFollowers.Values);
+
+    var activityLabels = System.Text.Json.JsonSerializer.Serialize(Model.ActivityScores.Keys);
+    var activityData = System.Text.Json.JsonSerializer.Serialize(Model.ActivityScores.Values);
+
+    var planLabelsJson = System.Text.Json.JsonSerializer.Serialize(Model.PlanDistribution?.Keys);
+    var planCountsJson = System.Text.Json.JsonSerializer.Serialize(Model.PlanDistribution?.Values);
+
 }
 
-<!--
-<div id="video">
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+}
+
+<div class="container">
+    <h2 class="text-center">Welcome to Reconova</h2>
+    <p class="posts-subtitle text-center mb-4">
+        Empowering cybersecurity professionals with powerful tools and insights — all in one place.
+    </p>
 
 
-    <video width="640" height="360" controls>
-        <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <!-- Summary Statistics Row -->
+    <div class="row mb-2">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-blue">
+                <div class="inner">
+                    <h3>@Model.TotalUsers</h3>
+                    <p>Total Users</p>
+                </div>
+                <div class="icon text-white">
+                    <i class="fas fa-users"></i>
+                </div>
+                <a asp-controller="User" asp-action="Index" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-blue">
+                <div class="inner">
+                    <h3>@Model.TotalTools</h3>
+                    <p>Total Tools</p>
+                </div>
+                <div class="icon text-white">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <a asp-controller="Tool" asp-action="Index" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-blue">
+                <div class="inner">
+                    <h3>@Model.TotalCategories</h3>
+                    <p>Total Categories</p>
+                </div>
+                <div class="icon text-white">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <a asp-controller="Category" asp-action="Index" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-blue">
+                <div class="inner">
+                    <h3>@Model.Total</h3>
+                    <p>Total Plans</p>
+                </div>
+                <div class="icon text-white">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <a asp-controller="Plan" asp-action="Index" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
 
+    <div class="dashboard-container">
+
+        <div class="dashboard-card">
+            <div class="dashboard-header" onclick="toggleCard(this)">
+                <div><i class="fas fa-user-plus"></i> User Registrations Over Time</div>
+                <div class="dashboard-actions">
+                    <i class="fas fa-download" onclick="exportChart(event, 'userTrendChart')"></i>
+                    <i class="fas fa-chevron-up collapse-icon"></i>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <canvas id="userTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-header" onclick="toggleCard(this)">
+                <div><i class="fas fa-wrench"></i> Top 5 Most Used Tools</div>
+                <div class="dashboard-actions">
+                    <i class="fas fa-download" onclick="exportChart(event, 'topToolsChart')"></i>
+                    <i class="fas fa-chevron-up collapse-icon"></i>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <canvas id="topToolsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-header" onclick="toggleCard(this)">
+                <div><i class="fas fa-user-friends"></i> Top Followers</div>
+                <div class="dashboard-actions">
+                    <i class="fas fa-download" onclick="exportChart(event, 'topFollowersBar')"></i>
+                    <i class="fas fa-chevron-up collapse-icon"></i>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <canvas id="topFollowersBar"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-header" onclick="toggleCard(this)">
+                <div><i class="fas fa-chart-line"></i> Most Active Users</div>
+                <div class="dashboard-actions">
+                    <i class="fas fa-download" onclick="exportChart(event, 'mostActiveUsersChart')"></i>
+                    <i class="fas fa-chevron-up collapse-icon"></i>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <canvas id="mostActiveUsersChart"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-header" onclick="toggleCard(this)">
+                <div><i class="fas fa-tools"></i> Tool Categories Distribution</div>
+                <div class="dashboard-actions">
+                    <i class="fas fa-download" onclick="exportChart(event, 'toolCategoryPie')"></i>
+                    <i class="fas fa-chevron-up collapse-icon"></i>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <canvas id="toolCategoryPie"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-header" onclick="toggleCard(this)">
+                <div><i class="fas fa-chart-pie"></i> User Distribution by Plan</div>
+                <div class="dashboard-actions">
+                    <i class="fas fa-download" onclick="exportChart(event, 'userPlanPieChart')"></i>
+                    <i class="fas fa-chevron-up collapse-icon"></i>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <canvas id="userPlanPieChart"></canvas>
+            </div>
+        </div>
+
+
+    </div>
 </div>
 
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
 
-<link href="https://vjs.zencdn.net/8.5.2/video-js.css" rel="stylesheet" />
-<script src="https://vjs.zencdn.net/8.5.2/video.min.js"></script>
+        //Tools
+        const toolsLabels = @Html.Raw(toolsLabelsJson);
+        const usageCounts = @Html.Raw(toolsCountsJson);
 
-<video id="my-video"
-       class="video-js"
-       controls
-       preload="auto"
-       width="640"
-       height="360"
-       data-setup='{}'>
-    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
-</video>
--->
+        const toolsCtx = document.getElementById('topToolsChart').getContext('2d');
+        new Chart(toolsCtx, {
+            type: 'bar',
+            data: {
+                labels: toolsLabels,
+                datasets: [{
+                    label: 'Top 5 Most Used Tools',
+                    data: usageCounts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        });
+
+
+        //Users
+        const userLabels = @Html.Raw(trendsLabelsJson);
+        const userData = @Html.Raw(trendsValuesJson);
+
+        const userCtx = document.getElementById('userTrendChart').getContext('2d');
+        new Chart(userCtx, {
+            type: 'line',
+            data: {
+                labels: userLabels,
+                datasets: [{
+                    label: 'User Registrations Over Time',
+                    data: userData,
+                    fill: true,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0
+                    }
+                }
+            }
+        });
+
+
+        //Categories
+        const pieLabels = @Html.Raw(categoryLabels);
+        const pieData = @Html.Raw(categoryCounts);
+
+        const ctxPie = document.getElementById('toolCategoryPie').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    label: 'Tool Categories',
+                    data: pieData,
+                    backgroundColor: [
+                        '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236',
+                        '#166a8f', '#00a950', '#58595b', '#8549ba'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                return `${label}: ${value} tools`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        //Followers
+        const followerLabels = @Html.Raw(followLabels);
+        const followerData = @Html.Raw(followData);
+
+        const followCtx = document.getElementById('topFollowersBar').getContext('2d');
+        new Chart(followCtx, {
+            type: 'bar',
+            data: {
+                labels: followerLabels,
+                datasets: [{
+                    label: 'Follower Count',
+                    data: followerData,
+                    backgroundColor: '#4dc9f6',
+                    borderColor: '#4dc9f6',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `${context.label}: ${context.raw} followers`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        //Activity
+        const activityLabels = @Html.Raw(activityLabels);
+        const activityData = @Html.Raw(activityData);
+
+        const activityCtx = document.getElementById('mostActiveUsersChart').getContext('2d');
+        new Chart(activityCtx, {
+            type: 'bar',
+            data: {
+                labels: activityLabels,
+                datasets: [{
+                    label: 'Activity Score',
+                    data: activityData,
+                    backgroundColor: '#36a2eb',
+                    borderColor: '#36a2eb',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // User Plan Distribution Pie Chart
+        const planLabels = @Html.Raw(planLabelsJson);
+        const planCounts = @Html.Raw(planCountsJson);
+
+        const planCtx = document.getElementById('userPlanPieChart').getContext('2d');
+        new Chart(planCtx, {
+            type: 'pie',
+            data: {
+                labels: planLabels,
+                datasets: [{
+                    data: planCounts,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                return `${label}: ${value} users`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'User Distribution by Plan'
+                    }
+                }
+            }
+        });
+
+
+        new Sortable(document.querySelector('.dashboard-container'), {
+            animation: 150,
+            ghostClass: 'sortable-ghost'
+        });
+
+        function toggleCard(header) {
+            const card = header.closest('.dashboard-card');
+            card.classList.toggle('collapsed');
+        }
+
+        function exportChart(event, canvasId) {
+            event.stopPropagation();
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `${canvasId}.png`;
+            link.click();
+        }
+    </script>
+}

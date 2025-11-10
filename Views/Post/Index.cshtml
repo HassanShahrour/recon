@@ -75,7 +75,8 @@
         // Add Comment
         function addComment(postId) {
             const input = document.getElementById(`comment-input-${postId}`);
-            const content = input.value;
+            let  content = input.value;
+            content = content.replace(/<\/?[^>]+(>|$)/g, "").trim();
 
             if (!content.trim()) return;
 
@@ -87,7 +88,7 @@
                 success: function (res) {
                     const avatarUrl = res.userProfilePhotoPath
                         ? baseUrl + res.userProfilePhotoPath.replace(/^~\//, '')
-                        : baseUrl + 'images/default-avatar.png';
+                        : baseUrl + 'images/account-bg.jpg';
 
                     const userName = res.userFirstName || 'You';
 

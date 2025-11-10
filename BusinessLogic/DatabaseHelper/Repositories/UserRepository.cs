@@ -23,12 +23,64 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
         {
             try
             {
+                var userId = await _userUtility.GetLoggedInUserId();
+                var userResult = await GetUserById(userId.ToString());
+
+                if (!userResult.IsSuccess || userResult.Value == null)
+                    return Result<List<User>>.Failure("User not found.");
+
+                var user = userResult.Value;
+
+                var users = new List<User>();
+
+                if (user.Role == "Admin")
+                {
+                    users = await _context.Users
+                    .Include(u => u.ScanResults)
+                    .Include(u => u.AIResults)
+                    .Include(u => u.Plan)
+                    .ToListAsync();
+                }
+                else
+                {
+                    users = await _context.Users
+                        .Include(u => u.ScanResults)
+                        .Include(u => u.AIResults)
+                        .Include(u => u.Plan)
+                        .Where(u => u.IsDeleted == 0)
+                        .ToListAsync();
+                }
+
+
+                if (users is null || !users.Any())
+                {
+                    return Result<List<User>>.Failure("No users found.");
+                }
+
+                return Result<List<User>>.Success(users);
+            }
+            catch (InvalidDataException ex)
+            {
+                return Result<List<User>>.Failure($"Invalid data: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error fetching users: " + ex.Message);
+                return Result<List<User>>.Failure("An error occurred while fetching users.");
+            }
+        }
+
+        public async Task<Result<List<User>>> GetAllUsersExceptLoggedIn()
+        {
+            try
+            {
                 var loggedInUserId = await _userUtility.GetLoggedInUserId();
 
                 var users = await _context.Users
                     .Include(u => u.ScanResults)
                     .Include(u => u.AIResults)
-                    .Where(u => u.IsDeleted == 0 && u.Id != loggedInUserId.ToString())
+                    .Include(u => u.Plan)
+                    .Where(u => u.Id != loggedInUserId.ToString() && u.IsDeleted == 0)
                     .ToListAsync();
 
 
@@ -58,6 +110,7 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
                     .Include(u => u.ScanResults)
                     .Include(u => u.AIResults)
                     .Include(u => u.Skills)
+                    .Include(u => u.Plan)
                     .Where(u => u.IsDeleted == 0)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
@@ -183,20 +236,18 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             }
         }
 
-
-
-
         public async Task<Result<bool>> DeleteUser(string id)
         {
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && u.IsDeleted == 0);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
                 if (user == null)
                     return Result<bool>.Failure("User not found.");
 
 
-                user.IsDeleted = 1;
+                user.IsDeleted = (sbyte)(user.IsDeleted == 0 ? 1 : 0);
+
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
 
@@ -224,7 +275,6 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
                 return "~/images/account-bg.jpg";
             }
         }
-
 
         public async Task<Result<List<Post>>> GetUserPosts(string userId)
         {

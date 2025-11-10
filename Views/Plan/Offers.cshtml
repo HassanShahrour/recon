@@ -1,0 +1,200 @@
+﻿@model Reconova.ViewModels.Plans.PlansViewModel
+
+@{
+    ViewData["Title"] = "Offers & Pricings Page";
+}
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/plans.css"/>
+}
+
+<div class="pricing-container">
+    <div class="pricing-card basic">
+        <div class="price-circle">
+            <div class="plan-name">@Model.Plans[0].Name?.ToUpper()</div>
+            <div class="price">$@Model.Plans[0].Price.ToString("f2")<span class="price-suffix">/mo</span></div>
+        </div>
+        <div class="decorative-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="features-container">
+            <ul class="features">
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Access up to 7 essential scanning tools</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Up to 10 scans per day</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Email support</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Ideal for small-scale or occasional use</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-times feature-icon"></i>
+                    <span class="feature-text">Automated reports is not supported</span>
+                </li>
+            </ul>
+            <button class="buy-btn"
+                    data-plan-id="@Model.Plans[0].Id"
+                @(Model.Plans[0].Id == Model.User.PlanId ? "disabled" : "")>
+                @(Model.Plans[0].Id == Model.User.PlanId ? "ACTIVATED" : "REQUEST SUBSCRIPTION")
+            </button>
+        </div>
+    </div>
+
+    <div class="pricing-card standard">
+        <div class="price-circle">
+            <div class="plan-name">@Model.Plans[1].Name?.ToUpper()</div>
+            <div class="price">$@Model.Plans[1].Price.ToString("f2")<span class="price-suffix">/mo</span></div>
+        </div>
+        <div class="decorative-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="features-container">
+            <ul class="features">
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Access up to 25 scanning tools, including advanced ones</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Up to 50 scans per day</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Automated report generating</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Suited for small teams or power users</span>
+                </li>
+            </ul>
+            <button class="buy-btn"
+                    data-plan-id="@Model.Plans[1].Id"
+                @(Model.Plans[1].Id == Model.User.PlanId ? "disabled" : "")>
+                @(Model.Plans[1].Id == Model.User.PlanId ? "ACTIVATED" : "REQUEST SUBSCRIPTION")
+            </button>
+        </div>
+    </div>
+
+    <div class="pricing-card premium">
+        <div class="price-circle">
+            <div class="plan-name">@Model.Plans[2].Name?.ToUpper()</div>
+            <div class="price">$@Model.Plans[2].Price.ToString("f2")<span class="price-suffix">/3 mo</span></div>
+        </div>
+        <div class="decorative-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="features-container">
+            <ul class="features">
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Unlimited access to all scanning tools</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Unlimited scans per day</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Premium support (priority email + chat)</span>
+                </li>
+
+                <li>
+                    <i class="fa fa-check feature-icon"></i>
+                    <span class="feature-text">Best for organizations and heavy-duty scanning workflows</span>
+                </li>
+            </ul>
+            <button class="buy-btn"
+                    data-plan-id="@Model.Plans[2].Id"
+                @(Model.Plans[2].Id == Model.User.PlanId ? "disabled" : "")>
+                @(Model.Plans[2].Id == Model.User.PlanId ? "ACTIVATED" : "REQUEST SUBSCRIPTION")
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+            $(".buy-btn").on("click", function () {
+                const button = $(this);
+                const planId = button.data("plan-id");
+
+                if (!planId || button.text().trim() === "ACTIVATED") return;
+
+                button.prop("disabled", true).text("SENDING...");
+
+                $.ajax({
+                    url: "/api/plan/RequestSubscription",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ planId: parseInt(planId) }),
+                    success: function (result) {
+                        if (result.success) {
+                            button.text("REQUESTED").addClass("requested");
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Request Sent!',
+                                text: result.message,
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else {
+                            button.prop("disabled", false).text("REQUEST SUBSCRIPTION");
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: result.message || 'Something went wrong.',
+                                confirmButtonColor: '#d33'
+                            });
+                        }
+                    },
+                    error: function () {
+                        button.prop("disabled", false).text("REQUEST SUBSCRIPTION");
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Network Error',
+                            text: 'Error sending request.',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                });
+            });
+        });
+
+    </script>
+}

@@ -9,12 +9,20 @@
       "PackagePath": "staticwebassets\\css\\account.css"
     },
     {
+      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\accountLayout.css",
+      "PackagePath": "staticwebassets\\css\\accountLayout.css"
+    },
+    {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\chat.css",
       "PackagePath": "staticwebassets\\css\\chat.css"
     },
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\create-post.css",
       "PackagePath": "staticwebassets\\css\\create-post.css"
+    },
+    {
+      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\dashboard.css",
+      "PackagePath": "staticwebassets\\css\\dashboard.css"
     },
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\editProfile.css",
@@ -31,6 +39,10 @@
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\notification.css",
       "PackagePath": "staticwebassets\\css\\notification.css"
+    },
+    {
+      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\plans.css",
+      "PackagePath": "staticwebassets\\css\\plans.css"
     },
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\css\\post.css",
@@ -2585,10 +2597,6 @@
       "PackagePath": "staticwebassets\\uploads\\481201ac-1225-4a9f-87de-bfff27dcbdba.jpg"
     },
     {
-      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\4b7442e2-951d-4de8-b9c6-94fe3cfc92e0.mp4",
-      "PackagePath": "staticwebassets\\uploads\\4b7442e2-951d-4de8-b9c6-94fe3cfc92e0.mp4"
-    },
-    {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\516849d7-d561-460d-9f6c-2cfa4916b2c5.jpg",
       "PackagePath": "staticwebassets\\uploads\\516849d7-d561-460d-9f6c-2cfa4916b2c5.jpg"
     },
@@ -2609,8 +2617,16 @@
       "PackagePath": "staticwebassets\\uploads\\63f22ead-d92a-4b8f-bb6c-a63b829f5851.jpg"
     },
     {
+      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\82a09578-f09c-4d48-989e-0a2d3b1e35fd.jpg",
+      "PackagePath": "staticwebassets\\uploads\\82a09578-f09c-4d48-989e-0a2d3b1e35fd.jpg"
+    },
+    {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\8333fb75-b195-4789-a2c7-b8ce52ebb7c8.jpg",
       "PackagePath": "staticwebassets\\uploads\\8333fb75-b195-4789-a2c7-b8ce52ebb7c8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\83f10a7c-a639-4985-a03a-cdb9289a5c80.jpg",
+      "PackagePath": "staticwebassets\\uploads\\83f10a7c-a639-4985-a03a-cdb9289a5c80.jpg"
     },
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\8b5829f7-4c74-4d44-bcc4-d2f211095f27.jpg",
@@ -2619,6 +2635,10 @@
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\934705ce-deac-4975-8723-94f04d995bb4.jpg",
       "PackagePath": "staticwebassets\\uploads\\934705ce-deac-4975-8723-94f04d995bb4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\a39245cf-a8a4-4ac8-923e-9fb324434f74.mp4",
+      "PackagePath": "staticwebassets\\uploads\\a39245cf-a8a4-4ac8-923e-9fb324434f74.mp4"
     },
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\c1b74489-1ce5-4e71-bd06-16a2a0fd6b05.jpg",
@@ -2635,6 +2655,10 @@
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\d2d31074-8cd5-4b60-9fa7-f7f7bfbaa262.jpg",
       "PackagePath": "staticwebassets\\uploads\\d2d31074-8cd5-4b60-9fa7-f7f7bfbaa262.jpg"
+    },
+    {
+      "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\uploads\\e080d934-54c0-4d59-ae6e-e253f96125a4.jpg",
+      "PackagePath": "staticwebassets\\uploads\\e080d934-54c0-4d59-ae6e-e253f96125a4.jpg"
     },
     {
       "Id": "C:\\Users\\USER\\Desktop\\Reconova\\wwwroot\\users\\images\\0d8b4ac4-031b-4b45-b978-9c667846f1ef.jpg",

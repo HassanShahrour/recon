@@ -28,3 +28,81 @@
     </div>
 </div>
 
+@section Scripts {
+    <script>
+        const baseUrl = '@Url.Content("~/")';
+
+        $(document).ready(function () {
+            $('.comment-btn').on('click', function () {
+                const postId = $(this).data('post-id');
+                const commentSection = $(`#comments-${postId}`);
+                commentSection.slideToggle(200);
+
+                const list = $('#comment-list-' + postId);
+                list.scrollTop(list[0].scrollHeight);
+            });
+
+        });
+
+
+        // Like Button Click
+        $('.like-btn').click(function (e) {
+            e.preventDefault();
+
+            const $btn = $(this);
+            const postId = $(this).data('post-id');
+
+            $.ajax({
+                url: '/api/Like/Toggle',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ PostId: postId }),
+                success: function (res) {
+                    $btn.find('.like-count').text(res.likeCount);
+                    $btn.toggleClass('liked');
+                }
+            });
+        });
+
+        // Add Comment
+        function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const content = input.value;
+
+            if (!content.trim()) return;
+
+            $.ajax({
+                url: '/api/Comment/Add',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ PostId: postId, Content: content }),
+                success: function (res) {
+                    const avatarUrl = res.userProfilePhotoPath
+                        ? baseUrl + res.userProfilePhotoPath.replace(/^~\//, '')
+                        : baseUrl + 'images/account-bg.jpg';
+
+                    const userName = res.userFirstName || 'You';
+
+                    const commentHtml = `
+                        <div class="comment-item">
+                            <img src="${avatarUrl}" alt="${userName}" class="comment-avatar" />
+                            <div class="comment-bubble">
+                                <strong>${userName}</strong><br />
+                                <span>${res.content}</span>
+                            </div>
+                        </div>`;
+
+                    const list = $(`#comment-list-${postId}`);
+                    list.prepend(commentHtml);
+                    input.value = '';
+
+                    const counter = $(`.comment-btn[data-post-id="${postId}"] .comment-count`);
+                    const newCount = parseInt(counter.text()) + 1;
+                    counter.text(newCount);
+                }
+            });
+        }
+
+
+    </script>
+}

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Core.Utilities;
+using Reconova.Data.DTOs.Schedule;
 using Reconova.Data.Models;
 using Reconova.ViewModels.Scan;
 
@@ -10,24 +11,33 @@ namespace Reconova.Controllers
     [Authorize]
     public class ScanController : Controller
     {
-        private readonly IScanRepository _scanRepository;
         private readonly ScanUtility _scanUtility;
+        private readonly UserUtility _userUtility;
+        private readonly IScanRepository _scanRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IToolsRepository _toolsRepository;
         private readonly ITaskRepository _taskRepository;
+        private readonly IScheduleScansRepository _scheduleScansRepository;
+        private readonly IUserRepository _userRepository;
 
         public ScanController(
             IScanRepository scanRepository,
             ScanUtility scanUtility,
+            UserUtility userUtility,
             ICategoryRepository categoryRepository,
             IToolsRepository toolsRepository,
-            ITaskRepository taskRepository)
+            ITaskRepository taskRepository,
+            IScheduleScansRepository scheduleScansRepository,
+            IUserRepository userRepository)
         {
             _scanRepository = scanRepository;
             _scanUtility = scanUtility;
             _categoryRepository = categoryRepository;
             _toolsRepository = toolsRepository;
             _taskRepository = taskRepository;
+            _userUtility = userUtility;
+            _scheduleScansRepository = scheduleScansRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<IActionResult> Tasks()
@@ -49,9 +59,7 @@ namespace Reconova.Controllers
         public async Task<IActionResult> CreateTask(Tasks task)
         {
             if (!ModelState.IsValid)
-            {
                 return RedirectToAction(nameof(Tasks));
-            }
 
             try
             {
@@ -59,7 +67,7 @@ namespace Reconova.Controllers
                 if (result.IsSuccess)
                     TempData["Success"] = "Task added successfully.";
                 else
-                    TempData["Error"] = "Error while adding task";
+                    TempData["Error"] = result.Error ?? "Error while adding task";
 
                 return RedirectToAction(nameof(Tasks));
             }
@@ -74,17 +82,15 @@ namespace Reconova.Controllers
         public async Task<IActionResult> EditTask([FromForm] Tasks task)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(new { message = "Invalid task data." });
-            }
 
             try
             {
                 var result = await _taskRepository.UpdateTask(task);
                 if (result.IsSuccess)
                     return Ok(new { message = "Task updated successfully." });
-                else
-                    return BadRequest(new { message = "Error while updating task." });
+
+                return BadRequest(new { message = result.Error ?? "Error while updating task." });
             }
             catch (Exception ex)
             {
@@ -100,15 +106,14 @@ namespace Reconova.Controllers
                 var result = await _taskRepository.DeleteTask(id);
                 if (result.IsSuccess)
                     return Ok(new { message = "Task deleted successfully." });
-                else
-                    return BadRequest(new { message = "Error while deleting task." });
+
+                return BadRequest(new { message = result.Error ?? "Error while deleting task." });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = $"Unexpected error: {ex.Message}" });
             }
         }
-
 
         public async Task<IActionResult> Index(int id)
         {
@@ -118,8 +123,12 @@ namespace Reconova.Controllers
                 var categoriesResult = await _categoryRepository.GetAllCategories();
                 var toolsResult = await _toolsRepository.GetAllTools();
                 var task = await _taskRepository.GetTaskById(id);
+                var scheduledScans = await _scheduleScansRepository.GetAllScheduledScans(id);
 
-                var target = task.Value.Target ?? "";
+                var userId = await _userUtility.GetLoggedInUserId();
+                var user = await _userRepository.GetUserById(userId.ToString() ?? "");
+
+                var target = task.Value?.Target ?? "";
 
                 var model = new ScanViewModel
                 {
@@ -127,8 +136,13 @@ namespace Reconova.Controllers
                     Target = target,
                     ScanResults = scansResult.Value ?? new List<ScanResult>(),
                     Categories = categoriesResult.Value ?? new List<Category>(),
-                    Tools = toolsResult.Value ?? new List<Tool>()
+                    Tools = toolsResult.Value ?? new List<Tool>(),
+                    ScheduledScans = scheduledScans.Value ?? new List<ScheduledScan>()
                 };
+
+                // Nullable bool, safely check
+                bool isAllowedToGenerateReport = user.Value?.Plan?.CanGenerateReport ?? false;
+                ViewBag.IsAllowedToGenerateReport = isAllowedToGenerateReport;
 
                 return View(model);
             }
@@ -177,7 +191,15 @@ namespace Reconova.Controllers
 
             try
             {
-                var scanId = await _scanUtility.StartReconScanAsync(target, tool, taskId);
+                var userId = await _userUtility.GetLoggedInUserId();
+                var canScan = await _scanRepository.CanUserScanToday();
+                if (!canScan.Value)
+                {
+                    TempData["ErrorMessage"] = "You have reached your daily scan limit.";
+                    return RedirectToAction(nameof(Index), new { id = taskId });
+                }
+
+                var scanId = await _scanUtility.StartReconScanAsync(userId.ToString() ?? "", target, tool, taskId);
                 return RedirectToAction(nameof(ScanResult), new { id = scanId });
             }
             catch (Exception ex)
@@ -219,5 +241,103 @@ namespace Reconova.Controllers
             }
         }
 
+        [HttpDelete]
+        [Route("api/scan/{id}")]
+        public async Task<IActionResult> DeleteScan(int id)
+        {
+            try
+            {
+                var result = await _scanRepository.DeleteScan(id);
+                if (result.IsSuccess)
+                    return NoContent();
+
+                return StatusCode(500, result.Error ?? "Failed to delete scan");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Unexpected error deleting scan: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ScheduleScan(string Name, string Target, int TaskId, TimeOnly Time, List<string> ToolName)
+        {
+            try
+            {
+                var userId = await _userUtility.GetLoggedInUserId();
+
+                var scheduledScan = new ScheduledScan
+                {
+                    Id = (int)(DateTime.UtcNow - new DateTime(2020, 1, 1)).TotalSeconds,
+                    Name = Name,
+                    UserId = userId.ToString(),
+                    Target = Target,
+                    Time = Time,
+                    TaskId = TaskId,
+                    IsActive = true
+                };
+
+                await _scheduleScansRepository.AddScheduledScan(scheduledScan);
+
+                foreach (var tool in ToolName)
+                {
+                    var toolId = await _toolsRepository.GetToolIdByName(tool);
+
+                    var scheduleTool = new ScheduledTool
+                    {
+                        ToolId = toolId.Value,
+                        Tool = tool,
+                        ScheduledScanId = scheduledScan.Id
+                    };
+
+                    await _scheduleScansRepository.AddScheduledScanTool(scheduleTool);
+                }
+
+                TempData["Success"] = "Scan scheduled successfully.";
+                return RedirectToAction(nameof(Index), new { id = TaskId });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error scheduling scan: {ex.Message}";
+                return RedirectToAction(nameof(Index), new { id = TaskId });
+            }
+        }
+
+        [HttpPut("api/schedules/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateScheduleDto dto)
+        {
+            if (id != dto.Id)
+                return BadRequest("ID mismatch");
+
+            try
+            {
+                var result = await _scheduleScansRepository.UpdateScheduleScan(dto);
+                if (!result.IsSuccess)
+                    return NotFound(result.Error);
+
+                return Ok(new { message = "Schedule updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("api/schedules/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var result = await _scheduleScansRepository.DeleteScheduleScan(id);
+                if (!result.IsSuccess)
+                    return NotFound(result.Error);
+
+                return Ok(new { message = "Scheduled scan deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

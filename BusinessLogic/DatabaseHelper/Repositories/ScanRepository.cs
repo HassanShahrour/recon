@@ -77,18 +77,17 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             }
         }
 
-        public async Task<Result<bool>> AddScan(string scanId, int taskId, string target, string command, string output, string reply)
+        public async Task<Result<bool>> AddScan(string userId, string scanId, int taskId, string target, string tool, string command, string output, string reply)
         {
             try
             {
-                var userId = await _userUtility.GetLoggedInUserId();
-
                 var result = new ScanResult
                 {
                     ScanId = scanId,
                     UserId = userId.ToString(),
                     TaskId = taskId,
                     Target = target,
+                    Tool = tool,
                     Command = command,
                     Output = output,
                 };
@@ -115,6 +114,68 @@ namespace Reconova.BusinessLogic.DatabaseHelper.Repositories
             {
                 Console.WriteLine("Error saving scan result: " + ex.Message);
                 return Result<bool>.Failure("An error occurred while saving the scan result.");
+            }
+        }
+
+        public async Task<Result<bool>> DeleteScan(int id)
+        {
+            try
+            {
+                var scan = await _context.ScanResults.FindAsync(id);
+
+                if (scan == null || scan.IsDeleted == 1)
+                {
+                    return Result<bool>.Failure("Scan not found or already deleted.");
+                }
+
+                scan.IsDeleted = 1;
+                _context.ScanResults.Update(scan);
+                await _context.SaveChangesAsync();
+
+                return Result<bool>.Success(true);
+            }
+            catch (InvalidDataException ex)
+            {
+                return Result<bool>.Failure($"Invalid data: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error deleting scan: " + ex.Message);
+                return Result<bool>.Failure("An error occurred while deleting the scan.");
+            }
+        }
+
+
+        public async Task<Result<bool>> CanUserScanToday()
+        {
+            try
+            {
+                var userId = await _userUtility.GetLoggedInUserId();
+
+                var user = await _context.Users
+                    .Include(u => u.Plan)
+                    .FirstOrDefaultAsync(u => u.Id == userId.ToString() && u.IsDeleted == 0);
+
+                if (user == null || user.Plan == null || !user.IsPlanActive)
+                    return Result<bool>.Failure($"Invalid data");
+
+                if (user.Plan.MaxScansPerDay == 0)
+                    Result<bool>.Failure($"Invalid data");
+
+                var today = DateTime.UtcNow.Date;
+
+                int scansToday = await _context.ScanResults
+                    .CountAsync(s =>
+                        s.UserId == userId.ToString() &&
+                        s.Timestamp.Date == today &&
+                        s.IsDeleted == 0);
+
+                return Result<bool>.Success(scansToday < user.Plan.MaxScansPerDay);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error checking scan limit: " + ex.Message);
+                return Result<bool>.Failure("An error occurred while checking the scan limit.");
             }
         }
 

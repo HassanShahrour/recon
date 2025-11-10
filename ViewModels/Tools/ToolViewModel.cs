@@ -8,5 +8,7 @@ namespace Reconova.ViewModels.Tools
         public List<Tool> Tools { get; set; } = new List<Tool>();
 
         public List<Category> Categories { get; set; } = new List<Category>();
+
+        public List<Plan> Plans { get; set; } = new List<Plan>();
     }
 }

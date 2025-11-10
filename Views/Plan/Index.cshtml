@@ -1,0 +1,260 @@
+﻿@model List<Reconova.Data.Models.Plan>
+
+@{
+    ViewData["Title"] = "Plans Page";
+    int counter = 1;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/tables.css" />
+}
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Plans</h5>
+        <button class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#createPlanModal">
+            <i class="fas fa-plus me-2"></i>Create
+        </button>
+    </div>
+
+    <div class="card-body">
+        <table id="PlanTable" class="table table-hover table-bordered table-striped text-center align-middle shadow-sm rounded">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Duration</th>
+                    <th>Max Scans</th>
+                    <th>Report</th>
+                    <th>Priority</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@counter</td>
+                        <td>@item.Name</td>
+                        <td>@item.Description</td>
+                        <td>@item.Price.ToString("F2") $</td>
+                        <td>@item.DurationInDays Days</td>
+                        <td>@item.MaxScansPerDay</td>
+                        <td>@(item.CanGenerateReport ? "Yes" : "No")</td>
+                        <td>@item.Priority</td>
+                        <td>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editPlanModal-@item.Id" class="me-2">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <a href="#" class="deletePlan text-danger" data-id="@item.Id" title="Delete Plan">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Edit Modal -->
+                    <div class="modal fade" id="editPlanModal-@item.Id" tabindex="-1" aria-labelledby="editPlanLabel-@item.Id" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editPlanLabel-@item.Id">Edit Plan</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" id="editId-@item.Id" value="@item.Id" />
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Plan Name</label>
+                                        <input type="text" class="form-control" id="Name-@item.Id" value="@item.Name" required />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" id="Description-@item.Id" rows="3" required>@item.Description</textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Price ($)</label>
+                                        <input type="number" class="form-control" id="Price-@item.Id" value="@item.Price" step="0.01" min="0" required />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Duration (Days)</label>
+                                        <input type="number" class="form-control" id="Duration-@item.Id" value="@item.DurationInDays" min="1" required />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Max Scans / Day</label>
+                                        <input type="number" class="form-control" id="Scans-@item.Id" value="@item.MaxScansPerDay" min="1" required />
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input type="checkbox" class="form-check-input" id="CanGenerateReport-@item.Id" @(item.CanGenerateReport ? "checked" : "") />
+                                        <label class="form-check-label" for="CanGenerateReport-@item.Id">Can Generate Report</label>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Priority</label>
+                                        <input type="number" class="form-control" id="Priority-@item.Id" value="@item.Priority" min="1" required />
+                                    </div>
+
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary submitEditPlan" data-id="@item.Id">Save</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    counter++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a asp-action="Offers" class="btn btn-blue mt-3">View Offers</a>
+
+<!-- Create Plan Modal -->
+<div class="modal fade" id="createPlanModal" tabindex="-1" aria-labelledby="createPlanLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPlanLabel">Create Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Plan Name</label>
+                    <input type="text" class="form-control" id="createName" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" id="createDescription" rows="3" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Price ($)</label>
+                    <input type="number" class="form-control" id="createPrice" step="0.01" min="0" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Duration (Days)</label>
+                    <input type="number" class="form-control" id="createDuration" min="1" required />
+                </div>
+
+                 <div class="mb-3">
+                    <label class="form-label">Max Scans / Day</label>
+                    <input type="number" class="form-control" id="createScans" min="1" required />
+                </div>
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="createCanGenerateReport" />
+                    <label class="form-check-label" for="createCanGenerateReport">Can Generate Report</label>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Priority</label>
+                    <input type="number" class="form-control" id="createPriority" min="1" required />
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="submitCreatePlan" class="btn btn-primary">Add</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Add Plan
+            $("#submitCreatePlan").click(function () {
+                const plan = {
+                    name: $("#createName").val(),
+                    description: $("#createDescription").val(),
+                    price: parseFloat($("#createPrice").val()),
+                    durationInDays: parseInt($("#createDuration").val()),
+                    maxScansPerDay: parseInt($("#createScans").val()),
+                    priority: parseInt($("#createPriority").val()),
+                    canGenerateReport: $("#createCanGenerateReport").is(":checked")
+                };
+
+                $.ajax({
+                    url: '/api/plan',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(plan),
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error', xhr.responseText || 'Error creating plan', 'error');
+                    }
+                });
+            });
+
+            // Edit Plan
+            $(".submitEditPlan").click(function () {
+                const id = $(this).data("id");
+                const plan = {
+                    name: $("#Name-" + id).val(),
+                    description: $("#Description-" + id).val(),
+                    price: parseFloat($("#Price-" + id).val()),
+                    durationInDays: parseInt($("#Duration-" + id).val()),
+                    maxScansPerDay: parseInt($("#Scans-" + id).val()),
+                    priority: parseInt($("#Priority-" + id).val()),
+                    canGenerateReport: $("#CanGenerateReport-" + id).is(":checked")
+                };
+
+                $.ajax({
+                    url: '/api/plan/' + id,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(plan),
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error', xhr.responseText || 'Error updating plan', 'error');
+                    }
+                });
+            });
+
+            // Delete Plan
+            $(".deletePlan").click(function () {
+                const id = $(this).data("id");
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will permanently delete the plan.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/api/plan/' + id,
+                            method: 'DELETE',
+                            success: function () {
+                                location.reload();
+                            },
+                            error: function (xhr) {
+                                Swal.fire('Error', xhr.responseText || 'Error deleting plan', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            initializeDataTable('PlanTable');
+        });
+    </script>
+}

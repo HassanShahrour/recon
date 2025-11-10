@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Core.Utilities;
 using Reconova.Data.Models;
 
 namespace Reconova.Controllers
 {
+
+    [Authorize]
     public class PostController : Controller
     {
         private readonly IPostRepository _postRepository;
@@ -59,7 +62,7 @@ namespace Reconova.Controllers
                 if (result.IsSuccess)
                 {
                     TempData["Success"] = "Post created successfully.";
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Post");
                 }
 
                 ModelState.AddModelError(string.Empty, result.Error ?? "Failed to create post.");

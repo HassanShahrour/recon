@@ -1,5 +1,6 @@
 ﻿using DinkToPdf;
 using DinkToPdf.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reconova.BusinessLogic.DatabaseHelper.Interfaces;
 using Reconova.Data.Models;
@@ -8,6 +9,8 @@ using System.Text;
 
 namespace Reconova.Controllers.Api
 {
+
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ReportController : ControllerBase
@@ -44,7 +47,7 @@ namespace Reconova.Controllers.Api
                         ColorMode = ColorMode.Color,
                         Orientation = Orientation.Portrait,
                         PaperSize = PaperKind.A4,
-                        Margins = new MarginSettings { Top = 0, Bottom = 0, Right = 0, Left = 0 }
+                        Margins = new MarginSettings { Top = 0, Bottom = 10, Right = 0, Left = 0 }
                     },
                     Objects =
             {
@@ -77,9 +80,6 @@ namespace Reconova.Controllers.Api
             }
         }
 
-
-
-
         public string GenerateHtml(List<ScanResult> results)
         {
             var sb = new StringBuilder();
@@ -90,6 +90,8 @@ namespace Reconova.Controllers.Api
             var imageBytes = System.IO.File.ReadAllBytes(imagePath);
             var base64 = Convert.ToBase64String(imageBytes);
             var imgSrc = $"data:image/png;base64,{base64}";
+
+            var username = $"{results[0].User?.FirstName} {results[0].User?.LastName}";
 
             sb.Append(@"
 <head>
@@ -116,6 +118,7 @@ namespace Reconova.Controllers.Api
             height: 60px;
             float: left;
             margin-right: 15px;
+            margin-top: 12px;
         }
 
         .header-text {
@@ -201,6 +204,7 @@ namespace Reconova.Controllers.Api
             <img src='" + imgSrc + @"' class='header-logo' alt='Logo' />
             <div class='header-text'>
                 <div class='header-title'>Reconova Report</div>
+                <div class='header-date'>" + username + @"</div>
                 <div class='header-date'>" + reportDate + @"</div>
             </div>
         </div>
@@ -212,24 +216,27 @@ namespace Reconova.Controllers.Api
             // Optional: show target for context
             sb.Append($"<p style='text-align: center;'><strong>Target:</strong> {results[0].Target}</p>");
 
+            int count = 1;
+
             foreach (var result in results)
             {
                 sb.Append("<div class='scan-card'>");
 
-                sb.Append($"<p><strong>Command:</strong> <code>{result.Command}</code></p>");
+                sb.Append($"<p><strong>{count}- Command:</strong> <code>{result.Command}</code></p>");
 
                 sb.Append("<h3>Scan Output</h3>");
                 sb.Append($"<pre>{(string.IsNullOrWhiteSpace(result.Output) ? "No output available." : result.Output)}</pre>");
 
                 if (result.AIResult != null && !string.IsNullOrWhiteSpace(result.AIResult.Output))
                 {
-                    sb.Append("<h3>AI Analysis</h3>");
-                    sb.Append($"<div class='analysis'>{result.AIResult.Output}</div>");
+                    sb.Append("<h3>Analysis</h3>");
+                    sb.Append($"<pre>{result.AIResult.Output}</pre>");
                 }
 
                 sb.Append($"<div class='timestamp'>Timestamp: {result.Timestamp.ToLocalTime():f}</div>");
 
                 sb.Append("</div>");
+                count++;
             }
 
             sb.Append("</div></body>");

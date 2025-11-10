@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Scan Page";
     int counter = 1;
+    int counter1 = 1;
+    var canGenerateReport = ViewBag.IsAllowedToGenerateReport ?? false;
 }
 
 @section Styles {
@@ -22,9 +24,12 @@
     <span id="btnHistory">
         <i class="fas fa-history me-1"></i> Scan History
     </span>
+
+     <span id="btnSchedule">
+        <i class="fas fa-calendar-alt me-1"></i> Scheduled Scans
+    </span>
+
 </div>
-
-
 
 <div id="loader" style="
     display:none;
@@ -47,8 +52,13 @@
         <div class="d-flex justify-content-center">
             <input id="user_input" class="form-control" type="text" name="Target" placeholder="Enter Domain or IP" value="@Model.Target" readonly required />
             <button id="startScanBtn" class="btn btn-blue" type="submit">Start Scan</button>
+
             <button id="suggest" class="btn btn-blue" type="button" data-bs-toggle="modal" data-bs-target="#suggestModal">
                 <i class="fas fa-star me-1"></i> Suggest
+            </button>
+
+            <button id="schedule" class="btn btn-blue" type="button" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+                <i class="fas fa-clock me-1"></i> Schedule
             </button>
         </div>
 
@@ -61,11 +71,10 @@
                     <input type="text" id="categoriesSearch" class="search form-control" placeholder="Search categories..." />
                     @foreach (var item in Model.Categories)
                     {
-                        <label>
-                            <input type="checkbox" />
+                        <label class="category-item">
+                            <input type="checkbox" class="category-filter" data-category-id="@item.Id" />
                             @item.Name
                         </label>
-
                     }
                 </div>
 
@@ -83,7 +92,7 @@
                     <input type="text" id="toolsSearch" class="search form-control" placeholder="Search tools..." />
                     @foreach (var item in Model.Tools)
                     {
-                        <label title="@item.Description">
+                        <label title="@item.Description" class="tool-item" data-category-id="@item.CategoryId">
                             <input type="checkbox" name="Tool" value="@item.Name" />
                             @item.Name
                         </label>
@@ -127,9 +136,66 @@
                                 <a asp-controller="Scan" asp-action="ScanResult" asp-route-id="@item.ScanId">
                                     <i class="fa fa-info-circle"></i>
                                 </a>
+
+                                <a href="#" class="deleteScan text-danger" data-id="@item.Id" title="Delete Scan">
+                                    <i class="fa fa-trash"></i>
+                                </a>
                             </td>
                         </tr>
                         counter++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (canGenerateReport)
+    {
+        <input type="hidden" id="taskId" value="@Model.TaskId" />
+        <button id="exportBtn" class="btn btn-blue mt-3">Generate Report</button>
+    }
+</section>
+
+
+<section id="scanScheduleSection" style="display: none;">
+    <div class="card">
+        <div class="card-header text-center">
+            <h5>Scheduled Scans</h5>
+        </div>
+        <div class="card-body">
+            <table id="ScansTable" class="table table-hover table-bordered table-striped text-center align-middle shadow-sm rounded">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ScheduledScans)
+                    {
+                        <tr>
+                            <td>@counter1</td>
+                            <td>@item.Name</td>
+                            <td>@item.Time</td>
+                            <td>
+                                <a href="#"
+                                   class="edit-scan"
+                                   data-id="@item.Id"
+                                   data-name="@item.Name"
+                                   data-time="@item.Time.ToString("HH\\:mm")"
+                                   data-tools='@Json.Serialize(item.ToolsUsed.Select(t => t.Tool))'
+                                   data-bs-toggle="modal" data-bs-target="#editScheduleModal">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+
+                                <a href="#" class="btn delete-scan-button" data-id="@item.Id" title="Delete Scan">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        counter1++;
                     }
                 </tbody>
             </table>
@@ -149,7 +215,7 @@
             </div>
             <div class="modal-body">
                 <div class="input-group">
-                    <input type="text" id="aiPrompt" class="form-control" placeholder="Describe the target or environment..." />
+                    <input type="text" id="aiPrompt" class="form-control" placeholder="Describe you task..." />
                     <button class="btn btn-blue" onclick="getSuggestedTools()">Get Tools</button>
                 </div>
             </div>
@@ -157,13 +223,260 @@
     </div>
 </div>
 
-<input type="hidden" id="taskId" value="@Model.TaskId" />
-<button id="exportBtn">Export PDF</button>
+<!-- Schedule Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow">
+            <form asp-action="ScheduleScan" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scheduleModalLabel">
+                        <i class="fas fa-clock me-2 text-primary"></i> Schedule Daily Scan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="Target" id="scheduledTarget" />
+                    <input type="hidden" name="TaskId" id="scheduledTaskId" value="@Model.TaskId" />
+
+                    <div class="mb-3">
+                        <label for="scanName" class="form-label">Schedule Name</label>
+                        <input name="Name" id="scanName" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="scanTime" class="form-label">Time to run scan</label>
+                        <input type="time" name="Time" id="scanTime" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label><strong>Select Tools</strong></label>
+                        <div class="d-flex flex-wrap gap-2" id="addScheduledTools">
+                            @foreach (var item in Model.Tools)
+                            {
+                                <div>
+                                    <label class="tool-item" title="@item.Description">
+                                        <input type="checkbox" name="ToolName" value="@item.Name" />
+                                        @item.Name
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-blue">Save Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Schedule Modal -->
+<div class="modal fade" id="editScheduleModal" tabindex="-1" aria-labelledby="editScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow">
+            <form id="editScheduleForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editScheduleModalLabel">
+                        <i class="fas fa-edit me-2 text-primary"></i> Edit Schedule
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" id="editScanId" />
+                    <div class="mb-3">
+                        <label for="editScanName" class="form-label">Schedule Name</label>
+                        <input id="editScanName" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editScanTime" class="form-label">Time to run scan</label>
+                        <input type="time" id="editScanTime" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label><strong>Select Tools</strong></label>
+                        <div class="d-flex flex-wrap gap-2" id="editToolsContainer">
+                            @foreach (var item in Model.Tools)
+                            {
+                                <div>
+                                    <label class="tool-item" title="@item.Description">
+                                        <input type="checkbox" class="editToolCheckbox" value="@item.Name" />
+                                        @item.Name
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Update Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 
 @section Scripts {
     <script>
         $(document).ready(function () {
+
+            // Live search for categories
+            $("#categoriesSearch").on("input", function () {
+                const query = $(this).val().toLowerCase();
+                $(".category-item").each(function () {
+                    const text = $(this).text().toLowerCase();
+                    $(this).toggle(text.includes(query));
+                });
+            });
+
+            // Live search for tools
+            $("#toolsSearch").on("input", function () {
+                const query = $(this).val().toLowerCase();
+                $(".tool-item").each(function () {
+                    const text = $(this).text().toLowerCase();
+                    $(this).toggle(text.includes(query));
+                });
+            });
+
+
+            $('#schedule').click(function () {
+                const target = $('#user_input').val().trim();
+                const taskId = $('input[name="TaskId"]').val();
+
+                if (!target) {
+                    Swal.fire('⚠️', 'Please enter a target before scheduling.', 'warning');
+                    return;
+                }
+
+                $('#scheduledTarget').val(target);
+                $('#scheduledTaskId').val(taskId);
+            });
+
+            $(".edit-scan").click(function () {
+                const id = $(this).data("id");
+                const name = $(this).data("name");
+                const time = $(this).data("time");
+                const selectedTools = $(this).data("tools");
+
+                $("#editScanId").val(id);
+                $("#editScanName").val(name);
+                $("#editScanTime").val(time);
+
+                $(".editToolCheckbox").each(function () {
+                    const toolName = $(this).val();
+                    $(this).prop("checked", selectedTools.includes(toolName));
+                });
+            });
+
+            $("#editScheduleForm").submit(function (e) {
+                e.preventDefault();
+
+                const id = $("#editScanId").val();
+                const name = $("#editScanName").val();
+                const time = $("#editScanTime").val();
+                const selectedTools = [];
+
+                $(".editToolCheckbox:checked").each(function () {
+                    selectedTools.push($(this).val());
+                });
+
+                $.ajax({
+                    url: `/api/schedules/${id}`,
+                    type: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        id: parseInt(id),
+                        name,
+                        time,
+                        toolNames: selectedTools
+                    }),
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function () {
+                        alert("Failed to update schedule.");
+                    }
+                });
+            });
+
+            $(".delete-scan-button").on("click", function () {
+                const id = $(this).data("id");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This will permanently delete the scheduled scan.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/api/schedules/${id}`,
+                            type: "DELETE",
+                            success: function () {
+                                  Swal.fire({
+                                    title: "Deleted!",
+                                    text: "The scheduled scan has been deleted.",
+                                    icon: "success",
+                                    confirmButtonText: "OK"
+                                }).then(() => location.reload());
+                            },
+                            error: function () {
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: "Failed to delete the scheduled scan.",
+                                    icon: "error"
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+
+
+             // Delete Scan
+            $(".deleteScan").click(function () {
+                const id = $(this).data("id");
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will permanently delete this scan.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/api/scan/' + id,
+                            method: 'DELETE',
+                            success: function () {
+                                 location.reload();
+                            },
+                            error: function (xhr) {
+                                Swal.fire('Error', xhr.responseText || 'Error deleting scan', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+
             initializeDataTable('Table');
+
+            initializeDataTable('ScansTable');
 
              $('#startScanBtn').on('click', function () {
                 const form = $('form[asp-action="StartScan"]');
@@ -181,20 +494,26 @@
                 }, 100);
             });
 
-            $('#btnTools, #btnHistory').on('click', function () {
-                $('#btnTools, #btnHistory').removeClass('selected-btn');
+           $('#btnTools, #btnHistory, #btnSchedule').on('click', function () {
+                $('#btnTools, #btnHistory, #btnSchedule').removeClass('selected-btn');
                 $(this).addClass('selected-btn');
             });
 
-             $('#btnTools').on('click', function () {
+            $('#btnTools').on('click', function () {
                 $('#scanFormSection').show();
-                $('#scanHistorySection').hide();
+                $('#scanHistorySection, #scanScheduleSection').hide();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
 
             $('#btnHistory').on('click', function () {
-                $('#scanFormSection').hide();
+                $('#scanFormSection, #scanScheduleSection').hide();
                 $('#scanHistorySection').show();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            $('#btnSchedule').on('click', function () {
+                $('#scanFormSection, #scanHistorySection').hide();
+                $('#scanScheduleSection').show();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
 
@@ -243,6 +562,11 @@
             });
         });
 
+        function toggleCategories(selectAll) {
+            $('.category-filter').prop('checked', selectAll);
+            filterToolsByCategories();
+        }
+
         async function getSuggestedTools() {
             var loader = $('#loader');
             var prompt = $('#aiPrompt').val();
@@ -279,6 +603,39 @@
                 loader.hide();
             }
         }
+
+        function filterToolsByCategories() {
+            const selectedCategoryIds = $('.category-filter:checked').map(function () {
+                return $(this).data('category-id');
+            }).get();
+
+            if (selectedCategoryIds.length === 0) {
+                $('.tool-item').show();
+            } else {
+                $('.tool-item').each(function () {
+                    const toolCategoryId = $(this).data('category-id');
+                    if (selectedCategoryIds.includes(toolCategoryId)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+        }
+
+        // Trigger filtering on category checkbox change
+        $(document).on('change', '.category-filter', filterToolsByCategories);
+
+        // Allow only one tool to be selected
+        $(document).on('change', 'input[name="Tool"]', function () {
+            if ($(this).is(':checked')) {
+                // Uncheck and disable all others
+                $('input[name="Tool"]').not(this).prop('checked', false).prop('disabled', true);
+            } else {
+                // If unchecked, re-enable all
+                $('input[name="Tool"]').prop('disabled', false);
+            }
+        });
 
     </script>
 }
