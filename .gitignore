@@ -1,28 +1,66 @@
+############################
 # Build folders
+############################
 bin/
 obj/
+[Bb]in/
+[Oo]bj/
 
-# Visual Studio / VS Code
+############################
+# Visual Studio folders
+############################
 .vs/
 .vscode/
 
+# These internal VS2022 cache folders frequently appear
+**/.vs/**/v17/
+**/.vs/**/CopilotIndices/
+**/.vs/**/FileContentIndex/
+**/.vs/**/DesignTimeBuild/
+**/.vs/**/ProjectEvaluation/
+
+############################
 # User-specific files
+############################
 *.user
+*.userosscache
 *.suo
 *.userprefs
 *.csproj.user
+*.rsuser
 
+############################
 # Logs
+############################
 *.log
 logs/
 
+############################
 # Sensitive settings
+############################
 appsettings.Development.json
 appsettings.Local.json
 
+############################
 # Publish outputs
+############################
 publish/
 
-# ASP.NET Core generated files
+############################
+# ASP.NET Core generated
+############################
 wwwroot/dist/
 Generated/
+
+############################
+# Rider / JetBrains
+############################
+.idea/
+*.iml
+
+############################
+# NuGet
+############################
+*.nupkg
+*.snupkg
+packages/
