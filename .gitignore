@@ -7,12 +7,17 @@ obj/
 [Oo]bj/
 
 ############################
+# Entity Framework Core
+############################
+Migrations/
+
+############################
 # Visual Studio folders
 ############################
 .vs/
 .vscode/
 
-# These internal VS2022 cache folders frequently appear
+# VS2022 internal cache folders
 **/.vs/**/v17/
 **/.vs/**/CopilotIndices/
 **/.vs/**/FileContentIndex/
