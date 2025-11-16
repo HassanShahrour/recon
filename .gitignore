@@ -1,0 +1,28 @@
+# Build folders
+bin/
+obj/
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Logs
+*.log
+logs/
+
+# Sensitive settings
+appsettings.Development.json
+appsettings.Local.json
+
+# Publish outputs
+publish/
+
+# ASP.NET Core generated files
+wwwroot/dist/
+Generated/
